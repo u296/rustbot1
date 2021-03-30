@@ -87,6 +87,7 @@ async fn join_user(
         }
     } {
         (handler, Ok(())) => {
+            
             Ok(handler)
         },
         (_, Err(e)) => {
