@@ -87,8 +87,8 @@ async fn after_hook(_: &Context, _: &Message, cmd_name: &str, error: Result<(), 
     }
 }
 
-#[tokio::main]
-async fn main() {
+
+async fn async_main() {
     env_logger::init();
     let token = {
          let mut tokenpath: Option<&str> = None;
@@ -141,4 +141,16 @@ async fn main() {
         println!("actual checksum: {:?}", checksum);
         exit(1);
     }
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let executor = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .worker_threads(4)
+        .thread_stack_size(1024*1024)
+        .build()?;
+
+    executor.block_on(async_main());
+    
+    Ok(())
 }
