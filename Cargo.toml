@@ -1,0 +1,35 @@
+[package]
+name = "bot1"
+version = "0.1.0"
+authors = ["u296 <u296b3g@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+
+tokio={version = "1.0", features = ["fs", "macros", "rt-multi-thread"]}
+futures="*"
+md5 = "*"
+async-process = "*"
+strip-ansi-escapes = "*"
+songbird = "*"
+log = "*"
+env_logger = "*"
+serde_json = "*"
+
+
+[dependencies.serenity]
+version = "0.10"
+default-features = true
+features = [
+    "framework",
+    "client",
+    "gateway",
+    "rustls_backend",
+    "model",
+    "cache",
+    "utils",
+    "voice"
+]
