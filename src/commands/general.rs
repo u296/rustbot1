@@ -159,6 +159,7 @@ async fn upload(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 String::from_utf8(bytes).unwrap()
             },
             Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
+                tokio::fs::create_dir_all("content").await?;
                 String::from("{}")
             }
             Err(e) => {
