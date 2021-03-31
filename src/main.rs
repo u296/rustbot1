@@ -119,7 +119,7 @@ async fn async_main() {
         let framework = StandardFramework::new()
             .configure(|c| c
                 .with_whitespace(true)
-                .prefix(".")
+                .prefix("%")
                 .delimiters(vec![", ", ","])
             )
             .group(&commands::GENERAL_GROUP)
