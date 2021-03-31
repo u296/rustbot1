@@ -1,79 +1,37 @@
-use std::error::Error;
-use std::time::{Duration, Instant};
-use std::sync::Arc;
+use std::time::{Duration};
 use std::collections::HashMap;
 
 use log::*;
 
-use tokio::io::{AsyncBufRead, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, AsyncSeek};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use async_process::Stdio;
 
 use serenity::{
-    async_trait,
-    client::bridge::gateway::{ShardId, ShardManager},
     framework::standard::{
-        Args, CommandOptions, CommandResult, CommandGroup,
-        DispatchError, HelpOptions, help_commands, Reason, StandardFramework,
-        buckets::{RevertBucket, LimitedFor},
+        Args, CommandResult,
         macros::{command, group, help, check, hook},
     },
-    http::Http,
-    model::{
-        prelude::*,
-        channel::{Channel, Message},
-        gateway::Ready,
-        id::UserId,
-        permissions::Permissions,
-    },
+    model::prelude::*,
     utils::MessageBuilder,
 
-    model::guild::Guild,
 };
 
-use songbird::{Songbird, Call, Event, EventContext, EventHandler, TrackEvent};
 use serenity::prelude::*;
 use futures::prelude::*;
 
+use crate::utils;
 
 #[group]
 #[commands(exec, spam_role, upload, list)]
 struct General;
 
-async fn output_helper<E, I>(ctx: &Context, msg: &Message, mut lines: I) -> Result<(), Box<dyn Error + Send + Sync>>
-    where E: Error, I: Unpin + Stream<Item = Result<String, E>> {
-    let mut output_buf = String::new();
-    let mut last_message_time = Instant::now();
-    while let Some(maybe_line) = lines.next().await {
-        match maybe_line {
-            Ok(line) => {
-                println!("{}", line);
-                output_buf.push_str(&format!("{}\n", String::from_utf8(strip_ansi_escapes::strip(&line)?)?));
-                if !output_buf.trim().is_empty() && Instant::now() >= last_message_time + Duration::from_secs(1) {
-                    for chunk in output_buf.as_bytes().chunks(2000) {
-                        msg.channel_id.say(&ctx, std::str::from_utf8(chunk)?).await?;
-                    }
-                    last_message_time = Instant::now();
-                    output_buf = String::new();
-                }
-            },
-            Err(e) => {
-                println!("error: {}", e);
-            }
-        }
-    }
-    if !output_buf.trim().is_empty() {
-        for chunk in output_buf.as_bytes().chunks(2000) {
-            msg.channel_id.say(&ctx, std::str::from_utf8(chunk)?).await?;
-        }
-    }
-    Ok(())
-}
+
 
 #[command]
-async fn exec(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+async fn exec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     panic!("disabled");
-    let cmdline = &msg.content["exec ".len()..];
+    let cmdline = args.message();
     let mut cmdline = cmdline.split_whitespace();
 
 
@@ -96,7 +54,7 @@ async fn exec(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     );
     
     
-    output_helper(&ctx, &msg, output_lines).await?;
+    utils::send_buffered(ctx, msg.channel_id, output_lines).await?;
 
     
     Ok(())
@@ -210,7 +168,7 @@ async fn upload(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 }
 
 #[command]
-async fn list(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     match tokio::fs::File::open("content/manifest.json").await {
         Ok(mut f) => {
             let mut bytes = Vec::new();

@@ -34,6 +34,7 @@ use songbird::SerenityInit;
 
 use serenity::prelude::*;
 
+mod utils;
 mod commands;
 
 /// the md5 hash of the key must match this
@@ -123,6 +124,7 @@ async fn async_main() {
             )
             .group(&commands::GENERAL_GROUP)
             .group(&commands::VOICE_GROUP)
+            .group(&commands::DEBUG_GROUP)
             .after(after_hook);
 
         let mut client = Client::builder(&token)
