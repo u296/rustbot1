@@ -5,6 +5,7 @@ use std::sync::*;
 use std::cell::*;
 use std::process::exit;
 use std::time::{Instant, Duration};
+use std::path::PathBuf;
 
 use log::*;
 
@@ -36,9 +37,10 @@ use serenity::prelude::*;
 
 mod utils;
 mod commands;
+mod config;
 
 /// the md5 hash of the key must match this
-const KEY_MD5_CHECKSUM: [u8; 16] = [
+const KEY_MD5_CHECKSUM_BYTES: [u8; 16] = [
     133,
     23,
     51,
@@ -88,60 +90,68 @@ async fn after_hook(_: &Context, _: &Message, cmd_name: &str, error: Result<(), 
     }
 }
 
-
-async fn async_main() {
-    env_logger::init();
-    let token = {
-         let mut tokenpath: Option<&str> = None;
-         let mut iter = env::args().peekable();
-         while let Some(arg) = iter.next() {
-            if arg == "-token" || arg == "-t" {
-                tokenpath = Some(iter.peek().expect("expected token after -t argument"));
-                 break;
-             }
+async fn get_token() -> Result<String, Box<dyn Error>> {
+    let mut tokenpath: Option<&str> = None;
+    let mut iter = env::args().peekable();
+    
+    while let Some(arg) = iter.next() {
+        if arg == "--token" || arg == "-t" {
+            tokenpath = Some(iter.peek().expect("expected argument after -t"));
+            break;
         }
-        use std::path::PathBuf;
+    }
                 
-        let filepath: PathBuf = PathBuf::from(tokenpath.unwrap_or("token"));
-        let token = fs::read_to_string(&filepath).unwrap();
+    let filepath= PathBuf::from(tokenpath.unwrap_or("token"));
+    let token = tokio::fs::read_to_string(&filepath).await?;
 
+    Ok(token)
+}
 
-
-        token
-    };
-
-    let checksum = md5::compute(&token);
-
-    let checksum: [u8; 16] = checksum.into();
-
-    if checksum == KEY_MD5_CHECKSUM {
-
-        let framework = StandardFramework::new()
-            .configure(|c| c
-                .with_whitespace(true)
-                .prefix("%")
-                .delimiters(vec![", ", ","])
-            )
-            .group(&commands::GENERAL_GROUP)
-            .group(&commands::VOICE_GROUP)
-            .group(&commands::DEBUG_GROUP)
-            .after(after_hook);
-
-        let mut client = Client::builder(&token)
-        .event_handler(Handler::new())
-        .framework(framework)
-        .register_songbird()
-        .await
-        .expect("error creating client");
-
-        if let Err(why) = client.start().await {
-            println!("client error: {:?}", why);
-        }
+fn validate_token(token: &str) -> Result<(), md5::Digest> {
+    let digest = md5::compute(token);
+    if md5::Digest(KEY_MD5_CHECKSUM_BYTES) == digest {
+        Ok(())
     } else {
-        println!("invalid token");
-        println!("expected checksum: {:?}", KEY_MD5_CHECKSUM);
-        println!("actual checksum: {:?}", checksum);
-        exit(1);
+        Err(digest)
+    }
+}
+
+async fn async_main() -> Result<(), Box<dyn Error>> {
+    env_logger::init();
+    let token = get_token().await?;
+
+    let config = config::read_config().await?;
+
+    match validate_token(&token) {
+        Ok(()) => {
+            let framework = StandardFramework::new()
+                .configure(|c| c
+                    .with_whitespace(true)
+                    .prefix(&config.prefix)
+                    .delimiters(vec![", ", ","])
+                )
+                .group(&commands::GENERAL_GROUP)
+                .group(&commands::VOICE_GROUP)
+                .group(&commands::DEBUG_GROUP)
+                .after(after_hook);
+
+            let mut client = Client::builder(&token)
+                .event_handler(Handler::new())
+                .framework(framework)
+                .register_songbird()
+                .await?;
+
+            match client.start().await {
+                Ok(()) => Ok(()),
+                Err(e) => Err(e.into())
+            }
+        },
+        Err(checksum) => {
+            println!("invalid token");
+            println!("expected checksum: {:?}", KEY_MD5_CHECKSUM_BYTES);
+            println!("actual checksum: {:?}", checksum);
+            exit(1);
+        }
     }
 }
 
