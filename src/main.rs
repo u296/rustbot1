@@ -1,25 +1,26 @@
-use std::env;
-use std::fs;
-use std::error::Error;
-use std::sync::*;
 use std::cell::*;
-use std::process::exit;
-use std::time::{Instant, Duration};
+use std::env;
+use std::error::Error;
+use std::fs;
 use std::path::PathBuf;
+use std::process::exit;
+use std::sync::*;
+use std::time::{Duration, Instant};
 
 use log::*;
 
-use futures::prelude::*;
 use futures::join;
+use futures::prelude::*;
 
 use serenity::{
     async_trait,
     client::bridge::gateway::{ShardId, ShardManager},
     framework::standard::{
-        Args, CommandOptions, CommandResult, CommandGroup, CommandError,
-        DispatchError, HelpOptions, help_commands, Reason, StandardFramework,
-        buckets::{RevertBucket, LimitedFor},
-        macros::{command, group, help, check, hook},
+        buckets::{LimitedFor, RevertBucket},
+        help_commands,
+        macros::{check, command, group, help, hook},
+        Args, CommandError, CommandGroup, CommandOptions, CommandResult, DispatchError,
+        HelpOptions, Reason, StandardFramework,
     },
     http::Http,
     model::{
@@ -35,38 +36,20 @@ use songbird::SerenityInit;
 
 use serenity::prelude::*;
 
-mod utils;
 mod commands;
 mod config;
+mod utils;
 
 /// the md5 hash of the key must match this
 const KEY_MD5_CHECKSUM_BYTES: [u8; 16] = [
-    133,
-    23,
-    51,
-    212,
-    218,
-    233,
-    16,
-    89,
-    86,
-    135,
-    72,
-    187,
-    246,
-    150,
-    20,
-    217
+    133, 23, 51, 212, 218, 233, 16, 89, 86, 135, 72, 187, 246, 150, 20, 217,
 ];
-
-
 
 struct Handler;
 
 impl Handler {
     pub fn new() -> Handler {
-        Handler {
-        }
+        Handler {}
     }
 }
 
@@ -75,7 +58,7 @@ impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content.contains("69") {
             msg.channel_id.say(&ctx, "nice").await.unwrap();
-        }   
+        }
     }
 
     async fn ready(&self, _: Context, ready: Ready) {
@@ -93,15 +76,15 @@ async fn after_hook(_: &Context, _: &Message, cmd_name: &str, error: Result<(), 
 async fn get_token() -> Result<String, Box<dyn Error>> {
     let mut tokenpath: Option<&str> = None;
     let mut iter = env::args().peekable();
-    
+
     while let Some(arg) = iter.next() {
         if arg == "--token" || arg == "-t" {
             tokenpath = Some(iter.peek().expect("expected argument after -t"));
             break;
         }
     }
-                
-    let filepath= PathBuf::from(tokenpath.unwrap_or("token"));
+
+    let filepath = PathBuf::from(tokenpath.unwrap_or("token"));
     let token = tokio::fs::read_to_string(&filepath).await?;
 
     Ok(token)
@@ -125,11 +108,11 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
     match validate_token(&token) {
         Ok(()) => {
             let framework = StandardFramework::new()
-                .configure(|c| c
-                    .with_whitespace(true)
-                    .prefix(&config.prefix)
-                    .delimiters(vec![", ", ","])
-                )
+                .configure(|c| {
+                    c.with_whitespace(true)
+                        .prefix(&config.prefix)
+                        .delimiters(vec![", ", ","])
+                })
                 .group(&commands::GENERAL_GROUP)
                 .group(&commands::VOICE_GROUP)
                 .group(&commands::DEBUG_GROUP)
@@ -143,9 +126,9 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
 
             match client.start().await {
                 Ok(()) => Ok(()),
-                Err(e) => Err(e.into())
+                Err(e) => Err(e.into()),
             }
-        },
+        }
         Err(checksum) => {
             println!("invalid token");
             println!("expected checksum: {:?}", KEY_MD5_CHECKSUM_BYTES);
@@ -159,10 +142,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let executor = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .worker_threads(4)
-        .thread_stack_size(4*1024*1024)
+        .thread_stack_size(4 * 1024 * 1024)
         .build()?;
 
     executor.block_on(async_main());
-    
+
     Ok(())
 }

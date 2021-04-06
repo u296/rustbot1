@@ -1,57 +1,50 @@
 use std::error::Error;
-use std::time::{Duration, Instant};
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 
 use log::*;
 
-use serenity::{
-    async_trait,
-    model::prelude::*,
-};
+use serenity::{async_trait, model::prelude::*};
 
-use songbird::{Songbird, Call, Event, EventContext, EventHandler, TrackEvent};
-use serenity::prelude::*;
 use futures::prelude::*;
+use serenity::prelude::*;
+use songbird::{Call, Event, EventContext, EventHandler, Songbird, TrackEvent};
 
 pub async fn get_user_voice_channel(
     guild: &Guild,
-    user: &UserId
+    user: &UserId,
 ) -> Result<ChannelId, Box<dyn Error + Send + Sync>> {
     match guild.voice_states.get(user) {
         Some(v) => Ok(v.channel_id.unwrap()),
-        None => {
-            Err("user is not in a voice channel".into())
-        }
+        None => Err("user is not in a voice channel".into()),
     }
 }
 
 pub async fn join_user(
     ctx: &Context,
     guild: &Guild,
-    user: &UserId
+    user: &UserId,
 ) -> Result<Arc<Mutex<Call>>, Box<dyn Error + Send + Sync>> {
-    
     let guild_id = guild.id;
-
 
     let connect_to = get_user_voice_channel(&guild, user).await?;
     debug!("acquired voice channel");
 
-
-
-    let manager = songbird::get(ctx).await
+    let manager = songbird::get(ctx)
+        .await
         .expect("no songbird client")
         .clone();
-    
+
     debug!("acquired manager");
 
     match {
-        match tokio::time::timeout(Duration::from_secs(2), manager.join(guild_id, connect_to)).await {
+        match tokio::time::timeout(Duration::from_secs(2), manager.join(guild_id, connect_to)).await
+        {
             Ok(g) => g,
             Err(e) => {
                 // for some reason it always times out when trying
                 // to join the channel it is already in
-                
+
                 // For now we assume that when this happens we are
                 // already in the correct channel
                 warn!("joining channel timed out: {}", e);
@@ -60,10 +53,7 @@ pub async fn join_user(
             }
         }
     } {
-        (handler, Ok(())) => {
-            
-            Ok(handler)
-        },
+        (handler, Ok(())) => Ok(handler),
         (_, Err(e)) => {
             error!("failed to join channel: {}", e);
             Err(e.into())
@@ -71,13 +61,10 @@ pub async fn join_user(
     }
 }
 
-
 pub async fn leave(ctx: &Context, guild: &Guild) -> Result<(), Box<dyn Error + Send + Sync>> {
     debug!("leaving call in {}", guild.name);
 
-    let manager = songbird::get(ctx).await
-        .unwrap()
-        .clone();
+    let manager = songbird::get(ctx).await.unwrap().clone();
 
     let call = manager.get(guild.id);
 
@@ -87,13 +74,12 @@ pub async fn leave(ctx: &Context, guild: &Guild) -> Result<(), Box<dyn Error + S
         return Err("not in a voice channel".into());
     }
 
-
     Ok(())
 }
 
 struct SongEndLeaver {
     guild_id: GuildId,
-    manager: Arc<Songbird>
+    manager: Arc<Songbird>,
 }
 
 #[async_trait]
@@ -117,9 +103,8 @@ pub async fn play_from_input(
     ctx: &Context,
     guild: &Guild,
     user: &UserId,
-    source: songbird::input::Input
+    source: songbird::input::Input,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    
     let call_lock = join_user(ctx, guild, user).await?;
 
     let mut call = call_lock.lock().await;
@@ -130,8 +115,8 @@ pub async fn play_from_input(
         Event::Track(TrackEvent::End),
         SongEndLeaver {
             guild_id: guild.into(),
-            manager: songbird::get(ctx).await.unwrap()
-        }
+            manager: songbird::get(ctx).await.unwrap(),
+        },
     )?;
 
     Ok(())

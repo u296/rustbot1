@@ -1,5 +1,5 @@
-use std::time::{Duration};
 use std::collections::HashMap;
+use std::time::Duration;
 
 use log::*;
 
@@ -9,16 +9,15 @@ use async_process::Stdio;
 
 use serenity::{
     framework::standard::{
+        macros::{check, command, group, help, hook},
         Args, CommandResult,
-        macros::{command, group, help, check, hook},
     },
     model::prelude::*,
     utils::MessageBuilder,
-
 };
 
-use serenity::prelude::*;
 use futures::prelude::*;
+use serenity::prelude::*;
 
 use crate::utils;
 
@@ -26,37 +25,26 @@ use crate::utils;
 #[commands(exec, spam_role, upload, list)]
 struct General;
 
-
-
 #[command]
 async fn exec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     panic!("disabled");
     let cmdline = args.message();
     let mut cmdline = cmdline.split_whitespace();
 
-
     let mut command = async_process::Command::new(cmdline.next().unwrap());
-    let mut child = command.args(cmdline)
+    let mut child = command
+        .args(cmdline)
         .stdout(async_process::Stdio::piped())
         .stderr(async_process::Stdio::piped())
         .spawn()?;
 
-    
-
     let stdout_lines = futures::io::BufReader::new(child.stdout.take().unwrap()).lines();
     let stderr_lines = futures::io::BufReader::new(child.stderr.take().unwrap()).lines();
 
+    let output_lines = futures::stream::select(stdout_lines, stderr_lines);
 
-
-    let output_lines = futures::stream::select(
-        stdout_lines,
-        stderr_lines,
-    );
-    
-    
     utils::send_buffered(ctx, msg.channel_id, output_lines).await?;
 
-    
     Ok(())
 }
 
@@ -64,30 +52,30 @@ async fn exec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[aliases("ping")]
 #[only_in(guilds)]
 async fn spam_role(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    
-    let rolename = {
-        args.message()
-    };
+    let rolename = { args.message() };
 
     let guild = msg.guild(&ctx.cache).await.unwrap();
 
     match guild.role_by_name(rolename) {
         Some(role) => {
             for _ in 0..10usize {
-                msg.channel_id.send_message(ctx, |m| {
+                msg.channel_id
+                    .send_message(ctx, |m| {
+                        let mut builder = MessageBuilder::new();
+                        builder.mention(role);
 
-                    let mut builder = MessageBuilder::new();
-                    builder.mention(role);
-
-                    m.content(builder.build());
-                    m
-                }).await?;
+                        m.content(builder.build());
+                        m
+                    })
+                    .await?;
 
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
-        },
+        }
         None => {
-            msg.channel_id.say(ctx, format!("no such role \"{}\"", rolename)).await?;
+            msg.channel_id
+                .say(ctx, format!("no such role \"{}\"", rolename))
+                .await?;
         }
     }
 
@@ -99,13 +87,12 @@ async fn upload(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     info!("upload");
     if msg.attachments.is_empty() {
         msg.channel_id.say(ctx, "no attached file").await?;
-        return Ok(())
+        return Ok(());
     }
 
     let attachment = &msg.attachments[0];
 
     let savename = args.message();
-
 
     let content = {
         use std::io;
@@ -115,7 +102,7 @@ async fn upload(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 f.read_to_end(&mut bytes).await?;
 
                 String::from_utf8(bytes).unwrap()
-            },
+            }
             Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
                 tokio::fs::create_dir_all("content").await?;
                 String::from("{}")
@@ -139,7 +126,6 @@ async fn upload(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     file.write_all(&serde_json::to_vec(&table)?).await?;
 
-
     let bytes = attachment.download().await?;
 
     let tmp_dir = "/tmp/rustbot";
@@ -161,7 +147,15 @@ async fn upload(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         .status()
         .await?;
 
-    msg.channel_id.say(ctx, format!("successfully uploaded {} as {}", attachment.filename, savename)).await?;
+    msg.channel_id
+        .say(
+            ctx,
+            format!(
+                "successfully uploaded {} as {}",
+                attachment.filename, savename
+            ),
+        )
+        .await?;
     info!("successfully uploaded {}", attachment.filename);
 
     Ok(())
@@ -176,20 +170,19 @@ async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 
             let list = serde_json::from_slice::<HashMap<String, String>>(&bytes)?
                 .iter()
-                .map(|(key,_)| key)
+                .map(|(key, _)| key)
                 .cloned()
                 .collect::<Vec<String>>()
                 .join("\n");
 
             msg.channel_id.say(ctx, list).await?;
 
-
             Ok(())
-        },
+        }
         Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {
             msg.channel_id.say(ctx, "nothing saved").await?;
             Ok(())
-        },
-        Err(e) => Err(e.into())
+        }
+        Err(e) => Err(e.into()),
     }
 }

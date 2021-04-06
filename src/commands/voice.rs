@@ -4,8 +4,8 @@ use log::*;
 
 use serenity::{
     framework::standard::{
-        Args, CommandResult, 
-        macros::{command, group, help, check, hook},
+        macros::{check, command, group, help, hook},
+        Args, CommandResult,
     },
     model::prelude::*,
 };
@@ -20,7 +20,6 @@ use crate::utils;
 #[commands(join, leave, play, play_local)]
 struct Voice;
 
-
 #[command]
 #[aliases("connect")]
 #[only_in(guilds)]
@@ -31,11 +30,9 @@ async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     //FIXME
     match utils::join_user(ctx, &guild, &msg.author.id).await {
         Ok(_) => Ok(()),
-        Err(e) => Err(e)
+        Err(e) => Err(e),
     }
 }
-
-
 
 #[command]
 #[aliases("dc", "disconnect")]
@@ -43,7 +40,7 @@ async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
 async fn leave(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     info!("leave");
     let guild = msg.guild(&ctx.cache).await.unwrap();
-    
+
     match utils::leave(ctx, &guild).await {
         Ok(()) => (),
         Err(e) => {
@@ -54,19 +51,18 @@ async fn leave(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     Ok(())
 }
 
-
-
-
-
 #[command]
 #[aliases("p")]
 #[only_in(guilds)]
 async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     info!("play");
-    debug!("streaming {} in {}", args.message(), msg.guild(&ctx.cache).await.unwrap().name);
+    debug!(
+        "streaming {} in {}",
+        args.message(),
+        msg.guild(&ctx.cache).await.unwrap().name
+    );
 
     let guild = msg.guild(&ctx.cache).await.unwrap();
-
 
     let text = args.message();
     debug!("text is {}", text);
@@ -79,18 +75,16 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
     };
 
-    
-
     let source = match source {
         Ok(src) => src,
         Err(e) => {
             msg.channel_id.say(ctx, format!("{:?}", e)).await?;
-            return Ok(())
+            return Ok(());
         }
     };
 
     debug!("acquired audio stream");
-    
+
     match utils::play_from_input(ctx, &guild, &msg.author.id, source).await {
         Ok(()) => (),
         Err(e) => {
@@ -98,8 +92,6 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
             return Err(e.into());
         }
     }
-    
-    
 
     Ok(())
 }
@@ -109,24 +101,28 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[only_in(guilds)]
 async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     info!("play_local");
-    debug!("playing {} in {}", args.message(), msg.guild(&ctx.cache).await.unwrap().name);
+    debug!(
+        "playing {} in {}",
+        args.message(),
+        msg.guild(&ctx.cache).await.unwrap().name
+    );
 
     let guild = msg.guild(&ctx.cache).await.unwrap();
-
 
     let text = args.message();
 
     let source = {
         let filename = {
-            let manifest: HashMap<String, String> = match tokio::fs::File::open("content/manifest.json").await {
-                Ok(mut f) => {
-                    let mut bytes = Vec::new();
-                    f.read_to_end(&mut bytes).await?;
+            let manifest: HashMap<String, String> =
+                match tokio::fs::File::open("content/manifest.json").await {
+                    Ok(mut f) => {
+                        let mut bytes = Vec::new();
+                        f.read_to_end(&mut bytes).await?;
 
-                    serde_json::from_slice(&bytes)?
-                },
-                _ => return Ok(())
-            };
+                        serde_json::from_slice(&bytes)?
+                    }
+                    _ => return Ok(()),
+                };
 
             match manifest.get(text) {
                 Some(f) => f.clone(),
@@ -140,18 +136,18 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         songbird::ffmpeg(format!("content/{}", filename)).await
     };
 
-    
-
     let source = match source {
         Ok(src) => src,
         Err(e) => {
-            msg.channel_id.say(ctx, format!("error starting source: {:?}", e)).await?;
-            return Ok(())
+            msg.channel_id
+                .say(ctx, format!("error starting source: {:?}", e))
+                .await?;
+            return Ok(());
         }
     };
 
     debug!("acquired audio stream");
-    
+
     match utils::play_from_input(ctx, &guild, &msg.author.id, source).await {
         Ok(()) => (),
         Err(e) => {

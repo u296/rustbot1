@@ -1,7 +1,7 @@
+pub mod debug;
 pub mod general;
 pub mod voice;
-pub mod debug;
 
+pub use debug::DEBUG_GROUP;
 pub use general::GENERAL_GROUP;
 pub use voice::VOICE_GROUP;
-pub use debug::DEBUG_GROUP;
