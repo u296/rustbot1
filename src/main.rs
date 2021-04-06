@@ -145,7 +145,5 @@ fn main() -> Result<(), Box<dyn Error>> {
         .thread_stack_size(4 * 1024 * 1024)
         .build()?;
 
-    executor.block_on(async_main());
-
-    Ok(())
+    executor.block_on(async_main())
 }
