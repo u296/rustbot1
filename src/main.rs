@@ -56,8 +56,14 @@ impl Handler {
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
+        let mut s = String::new();
         if msg.content.contains("69") {
-            msg.channel_id.say(&ctx, "nice").await.unwrap();
+            s.push_str("\nnice");
+        }
+        if !msg.content.is_empty() {
+            utils::send_buffered_blocking(&ctx, msg.channel_id, s.lines())
+                .await
+                .unwrap();
         }
     }
 
