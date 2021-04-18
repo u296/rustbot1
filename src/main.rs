@@ -60,8 +60,11 @@ impl EventHandler for Handler {
         if msg.content.contains("69") {
             s.push_str("\nnice");
         }
+        if msg.content.contains("420") {
+            s.push_str("\nblaze it");
+        }
         if !msg.content.is_empty() {
-            utils::send_buffered_blocking(&ctx, msg.channel_id, s.lines())
+            utils::send_buffered_blocking(&ctx, msg.channel_id, s.trim().lines())
                 .await
                 .unwrap();
         }
