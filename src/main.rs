@@ -5,18 +5,10 @@ use std::process::exit;
 
 use log::*;
 
-
 use serenity::{
     async_trait,
-    framework::standard::{
-        macros::hook,
-        CommandError,
-        StandardFramework,
-    },
-    model::{
-        channel::{Message},
-        gateway::Ready,
-    },
+    framework::standard::{macros::hook, CommandError, StandardFramework},
+    model::{channel::Message, gateway::Ready},
 };
 
 use songbird::SerenityInit;
@@ -51,13 +43,17 @@ impl EventHandler for Handler {
             s.push_str("\nblaze it");
         }
         if !msg.content.is_empty() {
-            utils::send_buffered(&ctx, msg.channel_id, futures::stream::iter(
-                s.trim()
-                .lines()
-                .map(|s| -> Result<&str, std::io::Error> {Ok(s)})
-            ))
-                .await
-                .unwrap();
+            utils::send_buffered(
+                &ctx,
+                msg.channel_id,
+                futures::stream::iter(
+                    s.trim()
+                        .lines()
+                        .map(|s| -> Result<&str, std::io::Error> { Ok(s) }),
+                ),
+            )
+            .await
+            .unwrap();
         }
     }
 
@@ -122,6 +118,7 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
                 .event_handler(Handler::new())
                 .framework(framework)
                 .register_songbird()
+                .type_map_insert::<config::Config>(config)
                 .await?;
 
             match client.start().await {

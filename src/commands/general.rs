@@ -28,7 +28,24 @@ struct General;
 #[command]
 #[allow(unreachable_code)]
 async fn exec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    panic!("disabled");
+    if !ctx
+        .data
+        .read()
+        .await
+        .get::<crate::config::Config>()
+        .expect("no config in typemap")
+        .enable_exec
+    {
+        utils::send_buffered(
+            ctx,
+            msg.channel_id,
+            stream::iter(
+                vec![Result::<&str, std::io::Error>::Ok("command is disabled")].into_iter(),
+            ),
+        )
+        .await?;
+        return Ok(());
+    }
     let cmdline = args.message();
     let mut cmdline = cmdline.split_whitespace();
 
