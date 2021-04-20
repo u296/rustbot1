@@ -9,7 +9,7 @@ use async_process::Stdio;
 
 use serenity::{
     framework::standard::{
-        macros::{check, command, group, help, hook},
+        macros::{command, group},
         Args, CommandResult,
     },
     model::prelude::*,
@@ -26,6 +26,7 @@ use crate::utils;
 struct General;
 
 #[command]
+#[allow(unreachable_code)]
 async fn exec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     panic!("disabled");
     let cmdline = args.message();

@@ -1,35 +1,22 @@
-use std::cell::*;
 use std::env;
 use std::error::Error;
-use std::fs;
 use std::path::PathBuf;
 use std::process::exit;
-use std::sync::*;
-use std::time::{Duration, Instant};
 
 use log::*;
 
-use futures::join;
-use futures::prelude::*;
 
 use serenity::{
     async_trait,
-    client::bridge::gateway::{ShardId, ShardManager},
     framework::standard::{
-        buckets::{LimitedFor, RevertBucket},
-        help_commands,
-        macros::{check, command, group, help, hook},
-        Args, CommandError, CommandGroup, CommandOptions, CommandResult, DispatchError,
-        HelpOptions, Reason, StandardFramework,
+        macros::hook,
+        CommandError,
+        StandardFramework,
     },
-    http::Http,
     model::{
-        channel::{Channel, Message},
+        channel::{Message},
         gateway::Ready,
-        id::UserId,
-        permissions::Permissions,
     },
-    utils::{content_safe, ContentSafeOptions, MessageBuilder},
 };
 
 use songbird::SerenityInit;
@@ -64,7 +51,11 @@ impl EventHandler for Handler {
             s.push_str("\nblaze it");
         }
         if !msg.content.is_empty() {
-            utils::send_buffered_blocking(&ctx, msg.channel_id, s.trim().lines())
+            utils::send_buffered(&ctx, msg.channel_id, futures::stream::iter(
+                s.trim()
+                .lines()
+                .map(|s| -> Result<&str, std::io::Error> {Ok(s)})
+            ))
                 .await
                 .unwrap();
         }
