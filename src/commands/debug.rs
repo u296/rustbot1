@@ -1,15 +1,11 @@
-use tokio::io::{
-    AsyncBufReadExt,
-};
+use tokio::io::AsyncBufReadExt;
 
 use serenity::{
     framework::standard::{
         macros::{command, group},
         Args, CommandResult,
     },
-    model::{
-        channel::Message,
-    },
+    model::channel::Message,
 };
 
 use serenity::prelude::*;
