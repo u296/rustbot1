@@ -2,7 +2,6 @@ use serde::Deserialize;
 use std::error::Error;
 
 use serenity::prelude::*;
-use std::any::Any;
 
 #[derive(Deserialize)]
 pub struct Config {

@@ -4,7 +4,6 @@ use std::time::{Duration, Instant};
 use serenity::model::prelude::*;
 
 use futures::prelude::*;
-use log::*;
 use serenity::prelude::*;
 
 pub async fn send_buffered<'a, S, I>(
