@@ -36,7 +36,7 @@ async fn exec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         .expect("no config in typemap")
         .enable_exec
     {
-        utils::send_buffered(
+        utils::send_buffered_text(
             ctx,
             msg.channel_id,
             stream::once(future::ready("command is disabled")),
@@ -60,9 +60,7 @@ async fn exec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let output_lines =
         futures::stream::select(stdout_lines, stderr_lines).filter_map(|r| future::ready(r.ok()));
 
-    utils::send_buffered(ctx, msg.channel_id, output_lines).await?;
-
-    Ok(())
+    utils::send_buffered_text(ctx, msg.channel_id, output_lines).await
 }
 
 #[command]

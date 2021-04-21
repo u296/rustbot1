@@ -7,7 +7,7 @@ use serenity::model::prelude::*;
 use futures::prelude::*;
 use serenity::prelude::*;
 
-pub async fn send_buffered<S, I>(
+pub async fn send_buffered_text<S, I>(
     ctx: &Context,
     channel: ChannelId,
     mut lines: I,
