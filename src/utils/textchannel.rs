@@ -1,12 +1,14 @@
 use std::error::Error;
 use std::time::{Duration, Instant};
+use std::path::*;
 
 use serenity::model::prelude::*;
+use serenity::http::AttachmentType;
 
 use futures::prelude::*;
 use serenity::prelude::*;
 
-pub async fn send_buffered<'a, S, I>(
+pub async fn send_buffered<S, I>(
     ctx: &Context,
     channel: ChannelId,
     mut lines: I,
@@ -39,5 +41,18 @@ where
             tokio::time::sleep(Duration::from_secs(2)).await;
         }
     }
+    Ok(())
+}
+
+pub async fn send_text_file<'a, P: Into<AttachmentType<'a>>, I: Iterator<Item = P>> (
+    ctx: &Context,
+    channel: ChannelId,
+    files: I,
+) -> Result<(), Box<dyn Error + Send + Sync>>{
+    
+
+
+    channel.send_files(ctx, files, |e| e).await?;
+
     Ok(())
 }
