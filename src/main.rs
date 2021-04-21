@@ -49,7 +49,6 @@ impl EventHandler for Handler {
                 futures::stream::iter(
                     s.trim()
                         .lines()
-                        .map(|s| -> Result<&str, std::io::Error> { Ok(s) }),
                 ),
             )
             .await

@@ -4,7 +4,7 @@ use log::*;
 
 use serenity::{
     framework::standard::{
-        macros::{check, command, group, help, hook},
+        macros::{command, group},
         Args, CommandResult,
     },
     model::prelude::*,

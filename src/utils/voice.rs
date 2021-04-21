@@ -1,12 +1,11 @@
 use std::error::Error;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::{Duration};
 
 use log::*;
 
 use serenity::{async_trait, model::prelude::*};
 
-use futures::prelude::*;
 use serenity::prelude::*;
 use songbird::{Call, Event, EventContext, EventHandler, Songbird, TrackEvent};
 
