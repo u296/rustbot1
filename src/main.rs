@@ -46,10 +46,7 @@ impl EventHandler for Handler {
             utils::send_buffered(
                 &ctx,
                 msg.channel_id,
-                futures::stream::iter(
-                    s.trim()
-                        .lines()
-                ),
+                futures::stream::iter(s.trim().lines()),
             )
             .await
             .unwrap();

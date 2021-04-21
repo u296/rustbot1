@@ -1,9 +1,8 @@
 use std::error::Error;
 use std::time::{Duration, Instant};
-use std::path::*;
 
-use serenity::model::prelude::*;
 use serenity::http::AttachmentType;
+use serenity::model::prelude::*;
 
 use futures::prelude::*;
 use serenity::prelude::*;
@@ -44,14 +43,11 @@ where
     Ok(())
 }
 
-pub async fn send_text_file<'a, P: Into<AttachmentType<'a>>, I: Iterator<Item = P>> (
+pub async fn send_text_file<'a, P: Into<AttachmentType<'a>>, I: Iterator<Item = P>>(
     ctx: &Context,
     channel: ChannelId,
     files: I,
-) -> Result<(), Box<dyn Error + Send + Sync>>{
-    
-
-
+) -> Result<(), Box<dyn Error + Send + Sync>> {
     channel.send_files(ctx, files, |e| e).await?;
 
     Ok(())
