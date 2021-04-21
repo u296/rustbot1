@@ -1,3 +1,4 @@
+use futures::prelude::*;
 use tokio::io::AsyncBufReadExt;
 
 use serenity::{
@@ -21,7 +22,8 @@ async fn show_latest_log(ctx: &Context, msg: &Message, _args: Args) -> CommandRe
     match tokio::fs::File::open("/home/discord/logs/rustbot1/current").await {
         Ok(f) => {
             let lines =
-                tokio_stream::wrappers::LinesStream::new(tokio::io::BufReader::new(f).lines());
+                tokio_stream::wrappers::LinesStream::new(tokio::io::BufReader::new(f).lines())
+                    .filter_map(|r| future::ready(r.ok()));
 
             utils::send_buffered(ctx, msg.channel_id, lines).await?;
 

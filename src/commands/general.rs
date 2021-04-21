@@ -39,9 +39,7 @@ async fn exec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         utils::send_buffered(
             ctx,
             msg.channel_id,
-            stream::iter(
-                vec![Result::<&str, std::io::Error>::Ok("command is disabled")].into_iter(),
-            ),
+            stream::once(future::ready("command is disabled")),
         )
         .await?;
         return Ok(());
@@ -59,7 +57,8 @@ async fn exec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let stdout_lines = futures::io::BufReader::new(child.stdout.take().unwrap()).lines();
     let stderr_lines = futures::io::BufReader::new(child.stderr.take().unwrap()).lines();
 
-    let output_lines = futures::stream::select(stdout_lines, stderr_lines);
+    let output_lines =
+        futures::stream::select(stdout_lines, stderr_lines).filter_map(|r| future::ready(r.ok()));
 
     utils::send_buffered(ctx, msg.channel_id, output_lines).await?;
 
