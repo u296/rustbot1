@@ -18,5 +18,5 @@ struct Debug;
 
 #[command]
 async fn show_latest_log(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    utils::send_text_file(ctx, msg.channel_id, vec![LOG_FILE_LOCATION]).await
+    utils::send_text_file(ctx, msg.channel_id, vec![LOG_FILE_LOCATION].into_iter()).await
 }
