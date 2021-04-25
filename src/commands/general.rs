@@ -13,7 +13,6 @@ use serenity::{
         Args, CommandResult,
     },
     model::prelude::*,
-    utils::MessageBuilder,
 };
 
 use futures::prelude::*;
@@ -22,7 +21,7 @@ use serenity::prelude::*;
 use crate::utils;
 
 #[group]
-#[commands(exec, spam_role, upload, list)]
+#[commands(exec, spam, upload, list)]
 struct General;
 
 #[command]
@@ -66,31 +65,26 @@ async fn exec(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[command]
 #[aliases("ping")]
 #[only_in(guilds)]
-async fn spam_role(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    let rolename = { args.message() };
+async fn spam(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    let name = { args.message() };
 
     let guild = msg.guild(&ctx.cache).await.unwrap();
 
-    match guild.role_by_name(rolename) {
+    match guild.role_by_name(name) {
         Some(role) => {
-            for _ in 0..10usize {
-                msg.channel_id
-                    .send_message(ctx, |m| {
-                        let mut builder = MessageBuilder::new();
-                        builder.mention(role);
-
-                        m.content(builder.build());
-                        m
-                    })
-                    .await?;
-
-                tokio::time::sleep(Duration::from_secs(1)).await;
-            }
+            utils::repeat_mention(ctx, msg.channel_id, role, 10, Duration::from_secs(1)).await?;
         }
         None => {
-            msg.channel_id
-                .say(ctx, format!("no such role \"{}\"", rolename))
-                .await?;
+            match guild.member_named(name) {
+                Some(member) => {
+                    utils::repeat_mention(ctx, msg.channel_id, member, 10, Duration::from_secs(1)).await?;
+                },
+                None => {
+                    msg.channel_id
+                        .say(ctx, format!("no such role or user \"{}\"", name))
+                        .await?;
+                }
+            }
         }
     }
 

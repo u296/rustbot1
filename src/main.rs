@@ -43,7 +43,7 @@ impl EventHandler for Handler {
             s.push_str("\nblaze it");
         }
         if !msg.content.is_empty() {
-            utils::send_buffered(
+            utils::send_buffered_text(
                 &ctx,
                 msg.channel_id,
                 futures::stream::iter(s.trim().lines()),
