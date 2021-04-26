@@ -27,7 +27,8 @@ fn split_string_to_sendable_chunks(s: impl AsRef<str>) -> Vec<String> {
     for line in s.as_ref().lines() {
         let last_chunk = chunks.last_mut().unwrap();
         
-        if !(last_chunk.len() + line.len() > MESSAGE_CODE_LIMIT) {
+        if !(last_chunk.len() + line.len() + 1 > MESSAGE_CODE_LIMIT) {
+            last_chunk.push('\n');
             last_chunk.push_str(line);
         }
         else {
