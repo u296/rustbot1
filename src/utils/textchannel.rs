@@ -26,7 +26,7 @@ fn split_line_to_sendable_chunks(line: impl AsRef<str>) -> Vec<String> {
     let mut chunk_begin_index = 0;
     
     while chunk_begin_index != line.as_ref().len() {
-        let chunk_end_index = get_latest_split_index(&line.as_ref()[chunk_begin_index..], MESSAGE_CODE_LIMIT) + 1;
+        let chunk_end_index = get_latest_split_index(&line.as_ref()[chunk_begin_index..], MESSAGE_CODE_LIMIT);
         chunks.push(String::from(&line.as_ref()[chunk_begin_index..chunk_end_index]));
         chunk_begin_index = chunk_end_index;
     }
