@@ -7,7 +7,6 @@ use serenity::http::Http;
 use serenity::model::prelude::*;
 
 use futures::prelude::*;
-use log::*;
 use serenity::prelude::*;
 
 fn get_latest_split_index(s: impl AsRef<str>, limit: usize) -> usize {
