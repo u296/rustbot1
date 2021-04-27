@@ -9,12 +9,26 @@ use serenity::constants::MESSAGE_CODE_LIMIT;
 use futures::prelude::*;
 use serenity::prelude::*;
 
+fn get_latest_split_index(s: impl AsRef<str>, limit: usize) -> usize {
+    for i in (0..limit).rev() {
+        if s.as_ref().is_char_boundary(i) {
+            return i
+        }
+    }
+
+    panic!("string not splittable");
+}
+
 // TODO: make this unicode safe
 fn split_line_to_sendable_chunks(line: impl AsRef<str>) -> Vec<String> {
     let mut chunks = vec![String::new()];
 
-    for line_chunk in line.as_ref().as_bytes().chunks(MESSAGE_CODE_LIMIT) {
-        chunks.push(String::from_utf8(line_chunk.into()).expect("string was split in invalid location"));
+    let mut chunk_begin_index = 0;
+    
+    while chunk_begin_index != line.as_ref().len() {
+        let chunk_end_index = get_latest_split_index(&line.as_ref()[chunk_begin_index..], MESSAGE_CODE_LIMIT) + 1;
+        chunks.push(String::from(&line.as_ref()[chunk_begin_index..chunk_end_index]));
+        chunk_begin_index = chunk_end_index;
     }
 
     chunks
