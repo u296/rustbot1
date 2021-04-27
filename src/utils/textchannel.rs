@@ -6,6 +6,7 @@ use serenity::http::Http;
 use serenity::model::prelude::*;
 use serenity::constants::MESSAGE_CODE_LIMIT;
 
+use log::*;
 use futures::prelude::*;
 use serenity::prelude::*;
 
@@ -27,6 +28,9 @@ fn split_line_to_sendable_chunks(line: impl AsRef<str>) -> Vec<String> {
     
     while chunk_begin_index != line.as_ref().len() {
         let chunk_end_index = get_latest_split_index(&line.as_ref()[chunk_begin_index..], MESSAGE_CODE_LIMIT);
+
+        debug!("chunk end index: {}", chunk_end_index);
+
         chunks.push(String::from(&line.as_ref()[chunk_begin_index..chunk_end_index]));
         chunk_begin_index = chunk_end_index;
     }
