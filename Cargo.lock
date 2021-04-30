@@ -211,12 +211,12 @@ dependencies = [
 
 [[package]]
 name = "bot1"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "async-process",
  "env_logger",
  "futures",
- "log 0.4.14",
+ "log 0.3.9",
  "md5",
  "serde",
  "serde_json",

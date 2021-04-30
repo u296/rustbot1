@@ -130,6 +130,27 @@ pub async fn repeat_mention<M: Mentionable>(
     Ok(())
 }
 
+fn format_mention_string(mentions: &[&(dyn Mentionable + Sync)]) -> String {
+    mentions
+        .iter()
+        .fold(String::new(), |acc, x| format!("{} {}", acc, x.mention()))
+}
+
+pub async fn repeat_mention_multiple(
+    http: &impl AsRef<Http>,
+    channel: ChannelId,
+    mention: &[&(dyn Mentionable + Sync)],
+    count: usize,
+    delay: Duration,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    for _ in 0..count {
+        channel.say(http, format_mention_string(mention)).await?;
+
+        tokio::time::sleep(delay).await;
+    }
+    Ok(())
+}
+
 #[test]
 fn test_get_latest_split_index() {
     assert_eq!(get_latest_split_index("s: impl AsRef<str>", 5), 4);
