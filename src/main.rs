@@ -14,6 +14,7 @@ use serenity::{
 use songbird::SerenityInit;
 
 use serenity::prelude::*;
+use serenity::client::bridge::gateway::GatewayIntents;
 
 mod commands;
 mod config;
@@ -110,8 +111,11 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
                 .group(&commands::DEBUG_GROUP)
                 .after(after_hook);
 
+            let gateway_intents = GatewayIntents::default() | GatewayIntents::GUILD_MEMBERS;
+
             let mut client = Client::builder(&token)
                 .event_handler(Handler::new())
+                .intents(gateway_intents)
                 .framework(framework)
                 .register_songbird()
                 .type_map_insert::<config::Config>(config)
