@@ -111,7 +111,7 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
                 .group(&commands::DEBUG_GROUP)
                 .after(after_hook);
 
-            let gateway_intents = GatewayIntents::default() | GatewayIntents::GUILD_MEMBERS;
+            let gateway_intents = GatewayIntents::default() | GatewayIntents::GUILD_MEMBERS | GatewayIntents::GUILD_MESSAGES;
 
             let mut client = Client::builder(&token)
                 .event_handler(Handler::new())
