@@ -82,7 +82,12 @@ async fn spam(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
             debug!("members: {:?}", members);
 
             if let Some(user) = members.iter().find(|m| {
-                m.nick == Some(m.to_string()) || m.user.name == name
+                let nickeq = if let Some(s) = &m.nick {
+                    s == name
+                } else {
+                    false
+                };
+                nickeq || m.user.name == name
             }) {
                 utils::repeat_mention(ctx, msg.channel_id, user, 10, Duration::from_secs(1)).await?;
             } else {
