@@ -79,9 +79,7 @@ async fn spam(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         None => {
             let members = guild.members(ctx, None, None).await?;
 
-            debug!("members: {:?}", members);
-
-            if let Some(user) = members.iter().find(|m| {
+            match members.iter().find(|m| {
                 let nickeq = if let Some(s) = &m.nick {
                     s == name
                 } else {
@@ -89,12 +87,39 @@ async fn spam(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 };
                 nickeq || m.user.name == name
             }) {
-                utils::repeat_mention(ctx, msg.channel_id, user, 10, Duration::from_secs(1)).await?;
-            } else {
-                msg.channel_id.say(ctx, "bruh").await?;
+                Some(member) => {
+                    utils::repeat_mention(ctx, msg.channel_id, member, 10, Duration::from_secs(1))
+                        .await?;
+                }
+                None => {
+                    let mentions: Vec<_> = msg
+                        .mentions
+                        .iter()
+                        .map(|u| u as &(dyn Mentionable + Sync))
+                        .chain(
+                            msg.mention_roles
+                                .iter()
+                                .map(|r| r as &(dyn Mentionable + Sync)),
+                        )
+                        .collect();
+
+                    if !mentions.is_empty() {
+                        utils::repeat_mention_multiple(
+                            ctx,
+                            msg.channel_id,
+                            &mentions,
+                            10,
+                            Duration::from_secs(1),
+                        )
+                        .await?;
+                    } else {
+                        msg.channel_id
+                            .say(ctx, format!("no such role or member \"{}\"", name))
+                            .await?;
+                    }
+                }
             }
         }
-        
     }
 
     Ok(())
