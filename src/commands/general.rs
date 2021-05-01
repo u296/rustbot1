@@ -74,31 +74,36 @@ async fn spam(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         Some(role) => {
             utils::repeat_mention(ctx, msg.channel_id, role, 10, Duration::from_secs(1)).await?;
         }
-        None => {
-            let mentions: Vec<_> = msg
-                .mentions
-                .iter()
-                .map(|u| u as &(dyn Mentionable + Sync))
-                .chain(
-                    msg.mention_roles
-                        .iter()
-                        .map(|r| r as &(dyn Mentionable + Sync)),
-                )
-                .collect();
+        None => match guild.member_named(name) {
+            Some(member) => {
+                utils::repeat_mention(ctx, msg.channel_id, member, 10, Duration::from_secs(1)).await?;
+            },
+            None => {
+                let mentions: Vec<_> = msg
+                    .mentions
+                    .iter()
+                    .map(|u| u as &(dyn Mentionable + Sync))
+                    .chain(
+                        msg.mention_roles
+                            .iter()
+                            .map(|r| r as &(dyn Mentionable + Sync)),
+                    )
+                    .collect();
 
-            if !mentions.is_empty() {
-                utils::repeat_mention_multiple(
-                    ctx,
-                    msg.channel_id,
-                    &mentions,
-                    10,
-                    Duration::from_secs(1),
-                )
-                .await?;
-            } else {
-                msg.channel_id
-                    .say(ctx, format!("no such role \"{}\"", name))
+                if !mentions.is_empty() {
+                    utils::repeat_mention_multiple(
+                        ctx,
+                        msg.channel_id,
+                        &mentions,
+                        10,
+                        Duration::from_secs(1),
+                    )
                     .await?;
+                } else {
+                    msg.channel_id
+                        .say(ctx, format!("no such role or member \"{}\"", name))
+                        .await?;
+                }
             }
         }
     }

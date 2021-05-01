@@ -211,7 +211,7 @@ dependencies = [
 
 [[package]]
 name = "bot1"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "async-process",
  "env_logger",
