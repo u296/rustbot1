@@ -76,16 +76,20 @@ async fn spam(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         Some(role) => {
             utils::repeat_mention(ctx, msg.channel_id, role, 10, Duration::from_secs(1)).await?;
         }
-        None => match guild.member_named(name) {
-            Some(member) => {
-                utils::repeat_mention(ctx, msg.channel_id, member, 10, Duration::from_secs(1)).await?;
-            },
-            None => {
-                msg.channel_id
-                    .say(ctx, format!("no such role or member \"{}\"", name))
-                    .await?;
+        None => {
+            let members = guild.members(ctx, None, None).await?;
+
+            debug!("members: {:?}", members);
+
+            if let Some(user) = members.iter().find(|m| {
+                m.nick == Some(m.to_string()) || m.user.name == name
+            }) {
+                utils::repeat_mention(ctx, msg.channel_id, user, 10, Duration::from_secs(1)).await?;
+            } else {
+                msg.channel_id.say(ctx, "bruh").await?;
             }
         }
+        
     }
 
     Ok(())
