@@ -13,8 +13,8 @@ use serenity::{
 
 use songbird::SerenityInit;
 
-use serenity::prelude::*;
 use serenity::client::bridge::gateway::GatewayIntents;
+use serenity::prelude::*;
 
 mod commands;
 mod config;
@@ -111,7 +111,11 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
                 .group(&commands::DEBUG_GROUP)
                 .after(after_hook);
 
-            let gateway_intents = GatewayIntents::default() | GatewayIntents::GUILDS | GatewayIntents::GUILD_MEMBERS | GatewayIntents::GUILD_MESSAGES | GatewayIntents::GUILD_VOICE_STATES;
+            let gateway_intents = GatewayIntents::default()
+                | GatewayIntents::GUILDS
+                | GatewayIntents::GUILD_MEMBERS
+                | GatewayIntents::GUILD_MESSAGES
+                | GatewayIntents::GUILD_VOICE_STATES;
 
             let mut client = Client::builder(&token)
                 .event_handler(Handler::new())
