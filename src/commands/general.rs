@@ -70,6 +70,8 @@ async fn spam(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     let guild = msg.guild(&ctx.cache).await.unwrap();
 
+    debug!("attempting to spam \"{}\"", name);
+
     match guild.role_by_name(name) {
         Some(role) => {
             utils::repeat_mention(ctx, msg.channel_id, role, 10, Duration::from_secs(1)).await?;
