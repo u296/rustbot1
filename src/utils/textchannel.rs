@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::error::Error;
 use std::time::{Duration, Instant};
 
@@ -8,6 +9,38 @@ use serenity::model::prelude::*;
 
 use futures::prelude::*;
 use serenity::prelude::*;
+
+#[derive(Default, Clone, Copy, Debug)]
+pub struct TextChannelData {
+    pub timer: Option<Instant>,
+}
+
+#[derive(Default, Clone, Debug)]
+pub struct TextChannelDataMap(pub HashMap<ChannelId, TextChannelData>);
+
+impl TextChannelDataMap {
+    pub fn new() -> Self {
+        Self(HashMap::new())
+    }
+}
+
+impl std::ops::Deref for TextChannelDataMap {
+    type Target = HashMap<ChannelId, TextChannelData>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for TextChannelDataMap {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl TypeMapKey for TextChannelDataMap {
+    type Value = Self;
+}
 
 fn get_latest_split_index(s: impl AsRef<str>, limit: usize) -> usize {
     for i in (0..limit).rev() {

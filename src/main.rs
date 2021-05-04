@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
@@ -123,6 +124,7 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
                 .framework(framework)
                 .register_songbird()
                 .type_map_insert::<config::Config>(config)
+                .type_map_insert::<utils::TextChannelDataMap>(utils::TextChannelDataMap::new())
                 .await?;
 
             match client.start().await {
