@@ -8,7 +8,7 @@ mod prelude {
 use serenity::framework::standard::macros::group;
 
 #[group]
-#[commands(exec, spam, upload, list, start_timer, stop_timer)]
+#[commands(exec, spam, upload, list, start_timer, read_timer, stop_timer)]
 struct General;
 
 mod exec;
