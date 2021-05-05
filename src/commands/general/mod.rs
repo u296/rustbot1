@@ -8,7 +8,16 @@ mod prelude {
 use serenity::framework::standard::macros::group;
 
 #[group]
-#[commands(exec, spam, upload, list, start_timer, read_timer, stop_timer)]
+#[commands(
+    exec,
+    spam,
+    upload,
+    list,
+    start_timer,
+    read_timer,
+    stop_timer,
+    select_random
+)]
 struct General;
 
 mod exec;
@@ -22,3 +31,6 @@ use upload::*;
 
 mod timer;
 use timer::*;
+
+mod random;
+use random::*;

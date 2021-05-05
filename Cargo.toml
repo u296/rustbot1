@@ -1,6 +1,6 @@
 [package]
 name = "bot1"
-version = "0.3.4"
+version = "0.4.0"
 authors = ["u296 <u296b3g@gmail.com>"]
 edition = "2018"
 
@@ -20,6 +20,7 @@ log = "*"
 env_logger = "*"
 serde = "*"
 serde_json = "*"
+rand = "*"
 
 
 [dependencies.serenity]
