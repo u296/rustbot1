@@ -18,7 +18,7 @@ use serenity::prelude::*;
 
 mod commands;
 mod config;
-mod utils;
+pub mod utils;
 
 /// the md5 hash of the key must match this
 const KEY_MD5_CHECKSUM_BYTES: [u8; 16] = [
