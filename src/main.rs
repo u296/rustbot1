@@ -104,7 +104,7 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
                 .configure(|c| {
                     c.with_whitespace(true)
                         .prefix(&config.prefix)
-                        .delimiters(vec![", ", ","])
+                        .delimiters(vec![", ", ",", " "])
                 })
                 .group(&commands::GENERAL_GROUP)
                 .group(&commands::VOICE_GROUP)
