@@ -7,7 +7,7 @@ use log::*;
 use serenity::{async_trait, model::prelude::*};
 
 use serenity::prelude::*;
-use songbird::{Call, Event, EventContext, EventHandler, Songbird, TrackEvent};
+use songbird::{Call, Event, EventContext, EventHandler, Songbird};
 
 pub fn get_user_voice_channel(guild: &Guild, user: &UserId) -> Option<ChannelId> {
     match guild.voice_states.get(user) {
@@ -140,11 +140,10 @@ impl EventHandler for SongEndLeaver {
 }
 
 pub async fn play_from_input(
-    ctx: &Context,
     call: Arc<Mutex<Call>>,
     source: songbird::input::Input,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let song = call.lock().await.play_source(source);
+    let _song = call.lock().await.play_source(source);
 
     Ok(())
 }

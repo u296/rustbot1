@@ -46,7 +46,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         return Ok(());
     };
 
-    utils::play_from_input(ctx, call, source).await
+    utils::play_from_input(call, source).await
 }
 
 #[command]
@@ -110,5 +110,5 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         return Ok(());
     };
 
-    utils::play_from_input(ctx, call, source).await
+    utils::play_from_input(call, source).await
 }
