@@ -11,7 +11,9 @@ async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     if let Some(vc) = maybe_vc {
         let _call = utils::join_voice_channel(ctx, &guild.id, &vc).await?;
     } else {
-        msg.channel_id.say(ctx, "you are not in a voice channel").await?;
+        msg.channel_id
+            .say(ctx, "you are not in a voice channel")
+            .await?;
     }
 
     Ok(())
