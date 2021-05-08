@@ -4,28 +4,31 @@ use super::prelude::*;
 #[aliases("connect")]
 #[only_in(guilds)]
 async fn join(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    info!("join");
     let guild = msg.guild(&ctx.cache).await.unwrap();
 
-    //FIXME
-    match utils::join_user(ctx, &guild, &msg.author.id).await {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e),
+    let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author.id);
+
+    if let Some(vc) = maybe_vc {
+        let _call = utils::join_voice_channel(ctx, &guild.id, &vc).await?;
+    } else {
+        msg.channel_id.say(ctx, "you are not in a voice channel").await?;
     }
+
+    Ok(())
 }
 
 #[command]
 #[aliases("dc", "disconnect")]
 #[only_in(guilds)]
 async fn leave(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    info!("leave");
     let guild = msg.guild(&ctx.cache).await.unwrap();
 
-    match utils::leave(ctx, &guild).await {
-        Ok(()) => (),
-        Err(e) => {
-            msg.channel_id.say(ctx, format!("{}", e)).await?;
-        }
+    let maybe_call = utils::get_guild_call(ctx, &guild.id).await;
+
+    if let Some(call) = maybe_call {
+        call.lock().await.leave().await?;
+    } else {
+        msg.channel_id.say(ctx, "not in a call").await?;
     }
 
     Ok(())

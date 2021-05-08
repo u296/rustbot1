@@ -96,6 +96,14 @@ pub async fn leave(ctx: &Context, guild: &Guild) -> Result<(), Box<dyn Error + S
     Ok(())
 }
 
+pub async fn get_guild_call(ctx: &Context, guild: &GuildId) -> Option<Arc<Mutex<Call>>> {
+    let man = songbird::get(ctx).await.expect("no songbird client").clone();
+
+    let gi: u64 = guild.0;
+
+    man.get(gi)
+}
+
 struct SongEndLeaver {
     guild_id: GuildId,
     manager: Arc<Songbird>,
