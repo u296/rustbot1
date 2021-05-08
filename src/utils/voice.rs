@@ -79,7 +79,7 @@ pub async fn join_user(
         }
     }
 }
-
+#[deprecated]
 pub async fn leave(ctx: &Context, guild: &Guild) -> Result<(), Box<dyn Error + Send + Sync>> {
     debug!("leaving call in {}", guild.name);
 
