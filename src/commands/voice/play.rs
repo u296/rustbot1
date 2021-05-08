@@ -35,17 +35,18 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
     };
 
-    debug!("acquired audio stream");
+    let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author.id);
 
-    match utils::play_from_input(ctx, &guild, &msg.author.id, source).await {
-        Ok(()) => (),
-        Err(e) => {
-            msg.channel_id.say(ctx, format!("{}", e)).await?;
-            return Err(e.into());
-        }
-    }
+    let call = if let Some(vc) = maybe_vc {
+        utils::join_voice_channel(ctx, &guild.id, &vc).await?
+    } else {
+        msg.channel_id
+            .say(ctx, "you are not in a voice channel")
+            .await?;
+        return Ok(());
+    };
 
-    Ok(())
+    utils::play_from_input(ctx, call, source).await
 }
 
 #[command]
@@ -98,15 +99,16 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
     };
 
-    debug!("acquired audio stream");
+    let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author.id);
 
-    match utils::play_from_input(ctx, &guild, &msg.author.id, source).await {
-        Ok(()) => (),
-        Err(e) => {
-            msg.channel_id.say(ctx, format!("{}", e)).await?;
-            return Err(e.into());
-        }
-    }
+    let call = if let Some(vc) = maybe_vc {
+        utils::join_voice_channel(ctx, &guild.id, &vc).await?
+    } else {
+        msg.channel_id
+            .say(ctx, "you are not in a voice channel")
+            .await?;
+        return Ok(());
+    };
 
-    Ok(())
+    utils::play_from_input(ctx, call, source).await
 }
