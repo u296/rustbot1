@@ -9,16 +9,38 @@ use serenity::{async_trait, model::prelude::*};
 use serenity::prelude::*;
 use songbird::{Call, Event, EventContext, EventHandler, Songbird, TrackEvent};
 
-pub async fn get_user_voice_channel(
+pub fn get_user_voice_channel(
     guild: &Guild,
     user: &UserId,
-) -> Result<ChannelId, Box<dyn Error + Send + Sync>> {
+) -> Option<ChannelId> {
     match guild.voice_states.get(user) {
-        Some(v) => Ok(v.channel_id.unwrap()),
-        None => Err("user is not in a voice channel".into()),
+        Some(v) => v.channel_id,
+        None => None,
     }
 }
 
+pub async fn join_voice_channel(
+    ctx: &Context,
+    guild: &GuildId,
+    channel: &ChannelId
+) -> Result<Arc<Mutex<Call>>, Box<dyn Error + Send + Sync>>{
+    let man = songbird::get(ctx)
+        .await
+        .expect("no songbird client")
+        .clone();
+
+    let gi: u64 = guild.0;
+    let ci: u64 = channel.0;
+
+    let (call, join_res) = man.join(gi, ci).await;
+
+    match join_res {
+        Ok(_) => Ok(call),
+        Err(e) => Err(e.into())
+    }
+}
+
+#[deprecated]
 pub async fn join_user(
     ctx: &Context,
     guild: &Guild,
@@ -26,7 +48,7 @@ pub async fn join_user(
 ) -> Result<Arc<Mutex<Call>>, Box<dyn Error + Send + Sync>> {
     let guild_id = guild.id;
 
-    let connect_to = get_user_voice_channel(&guild, user).await?;
+    let connect_to = get_user_voice_channel(&guild, user);
     debug!("acquired voice channel");
 
     let manager = songbird::get(ctx)
@@ -34,10 +56,8 @@ pub async fn join_user(
         .expect("no songbird client")
         .clone();
 
-    debug!("acquired manager");
-
     match {
-        match tokio::time::timeout(Duration::from_secs(2), manager.join(guild_id, connect_to)).await
+        match tokio::time::timeout(Duration::from_secs(2), manager.join(guild_id, connect_to.unwrap())).await
         {
             Ok(g) => g,
             Err(e) => {
