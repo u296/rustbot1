@@ -7,12 +7,12 @@ use tokio::io::AsyncReadExt;
 #[aliases("p")]
 #[only_in(guilds)]
 async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    //info!("play");
+    info!("play");
 
     let guild = msg.guild(&ctx.cache).await.unwrap();
 
     let text = args.message();
-    //debug!("text is {}", text);
+    debug!("text is {}", text);
 
     let source = {
         if text.starts_with("http") {
@@ -44,12 +44,11 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     utils::play_from_input(call, source).await
 }
 
-#[instrument]
 #[command]
 #[aliases("pl", "play local", "play saved")]
 #[only_in(guilds)]
 async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    //info!("play_local");
+    info!("play_local");
 
     let guild = msg.guild(&ctx.cache).await.unwrap();
 
