@@ -7,17 +7,22 @@ use tokio::io::AsyncReadExt;
 #[aliases("p")]
 #[only_in(guilds)]
 async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    info!("play");
+    play_impl(ctx, msg, args).await
+}
 
-    let guild = msg.guild(&ctx.cache).await.unwrap();
-
+#[instrument(skip(ctx))]
+async fn play_impl(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let text = args.message();
-    debug!("text is {}", text);
+    let guild = msg.guild(ctx).await.unwrap();
 
+    debug!(text, guild);
+    
     let source = {
         if text.starts_with("http") {
+            debug!("source is a link");
             songbird::ytdl(text).await
         } else {
+            debug!("source is search");
             songbird::input::ytdl_search(text).await
         }
     };
@@ -25,8 +30,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let source = match source {
         Ok(src) => src,
         Err(e) => {
-            msg.channel_id.say(ctx, format!("{:?}", e)).await?;
-            return Ok(());
+            return Err(format!("{:?}", e).into());
         }
     };
 
@@ -35,6 +39,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let call = if let Some(vc) = maybe_vc {
         utils::join_voice_channel(ctx, &guild, &vc).await?
     } else {
+        debug!("user is not in voice channel");
         msg.channel_id
             .say(ctx, "you are not in a voice channel")
             .await?;
@@ -48,11 +53,16 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[aliases("pl", "play local", "play saved")]
 #[only_in(guilds)]
 async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    info!("play_local");
+    play_local_impl(ctx, msg, args).await
+}
 
-    let guild = msg.guild(&ctx.cache).await.unwrap();
-
+#[instrument(skip(ctx))]
+async fn play_local_impl(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let text = args.message();
+    let guild = msg.guild(ctx).await.unwrap();
+
+    debug!(text, guild);
+    
 
     let source = {
         let filename = {
@@ -64,7 +74,7 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
                         serde_json::from_slice(&bytes)?
                     }
-                    _ => return Ok(()),
+                    Err(e) => return Err(e.into()),
                 };
 
             match manifest.get(text) {
@@ -76,7 +86,10 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
             }
         };
 
-        songbird::ffmpeg(format!("content/{}", filename)).await
+        let file = format!("content/{}", filename);
+        debug!(file);
+
+        songbird::ffmpeg(file).await
     };
 
     let source = match source {
@@ -85,7 +98,7 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
             msg.channel_id
                 .say(ctx, format!("error starting source: {:?}", e))
                 .await?;
-            return Ok(());
+            return Err(format!("{:?}", e).into());
         }
     };
 
