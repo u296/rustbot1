@@ -2,7 +2,7 @@ use std::error::Error;
 use std::sync::Arc;
 use std::time::Duration;
 
-use log::*;
+use tracing::*;
 
 use serenity::{async_trait, model::prelude::*};
 

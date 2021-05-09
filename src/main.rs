@@ -3,7 +3,7 @@ use std::error::Error;
 use std::path::PathBuf;
 use std::process::exit;
 
-use log::*;
+use tracing::*;
 
 use serenity::{
     async_trait,
@@ -93,7 +93,7 @@ fn validate_token(token: &str) -> Result<(), md5::Digest> {
 }
 
 async fn async_main() -> Result<(), Box<dyn Error>> {
-    env_logger::init();
+    tracing_subscriber::fmt::init();
     let token = get_token().await?;
 
     let config = config::read_config().await?;

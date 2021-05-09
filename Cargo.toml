@@ -1,6 +1,6 @@
 [package]
 name = "bot1"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["u296 <u296b3g@gmail.com>"]
 edition = "2018"
 
@@ -16,11 +16,11 @@ md5 = "*"
 async-process = "*"
 strip-ansi-escapes = "*"
 songbird = "*"
-log = "*"
-env_logger = "*"
 serde = "*"
 serde_json = "*"
 rand = "*"
+tracing = "*"
+tracing-subscriber = {version = "*", features = ["fmt"]}
 
 
 [dependencies.serenity]

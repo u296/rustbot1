@@ -1,11 +1,11 @@
 mod prelude {
     pub use crate::utils;
-    pub use log::*;
     pub use serenity::{
         framework::standard::{macros::command, Args, CommandResult},
         model::channel::Message,
         prelude::*,
     };
+    pub use tracing::*;
 }
 
 pub mod debug;
