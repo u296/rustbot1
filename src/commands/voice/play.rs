@@ -15,7 +15,7 @@ async fn play_impl(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let text = args.message();
     let guild = msg.guild(ctx).await.unwrap();
 
-    debug!(text, guild);
+    debug!(text, "{}", &guild.name);
     
     let source = {
         if text.starts_with("http") {
@@ -61,7 +61,7 @@ async fn play_local_impl(ctx: &Context, msg: &Message, args: Args) -> CommandRes
     let text = args.message();
     let guild = msg.guild(ctx).await.unwrap();
 
-    debug!(text, guild);
+    debug!(text, "{}", &guild.name);
     
 
     let source = {
@@ -86,7 +86,7 @@ async fn play_local_impl(ctx: &Context, msg: &Message, args: Args) -> CommandRes
             }
         };
 
-        let file = format!("content/{}", filename);
+        let file: &str = &format!("content/{}", filename);
         debug!(file);
 
         songbird::ffmpeg(file).await
