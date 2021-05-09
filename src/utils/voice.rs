@@ -48,66 +48,6 @@ pub async fn join_voice_channel(
     }
 }
 
-#[deprecated]
-pub async fn join_user(
-    ctx: &Context,
-    guild: &Guild,
-    user: &User,
-) -> Result<Arc<Mutex<Call>>, Box<dyn Error + Send + Sync>> {
-    let guild_id = guild.id;
-
-    let connect_to = get_user_voice_channel(&guild, user);
-    debug!("acquired voice channel");
-
-    let manager = songbird::get(ctx)
-        .await
-        .expect("no songbird client")
-        .clone();
-
-    match {
-        match tokio::time::timeout(
-            Duration::from_secs(2),
-            manager.join(guild_id, connect_to.unwrap()),
-        )
-        .await
-        {
-            Ok(g) => g,
-            Err(e) => {
-                // for some reason it always times out when trying
-                // to join the channel it is already in
-
-                // For now we assume that when this happens we are
-                // already in the correct channel
-                warn!("joining channel timed out: {}", e);
-
-                return Ok(manager.get(guild_id).unwrap());
-            }
-        }
-    } {
-        (handler, Ok(())) => Ok(handler),
-        (_, Err(e)) => {
-            error!("failed to join channel: {}", e);
-            Err(e.into())
-        }
-    }
-}
-#[deprecated]
-pub async fn leave(ctx: &Context, guild: &Guild) -> Result<(), Box<dyn Error + Send + Sync>> {
-    debug!("leaving call in {}", guild.name);
-
-    let manager = songbird::get(ctx).await.unwrap().clone();
-
-    let call = manager.get(guild.id);
-
-    if call.is_some() {
-        manager.remove(guild.id).await?;
-    } else {
-        return Err("not in a voice channel".into());
-    }
-
-    Ok(())
-}
-
 #[instrument(skip(ctx))]
 pub async fn get_guild_call(ctx: &Context, guild: &Guild) -> Option<Arc<Mutex<Call>>> {
     let man = songbird::get(ctx)
