@@ -30,10 +30,10 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
     };
 
-    let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author.id);
+    let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author);
 
     let call = if let Some(vc) = maybe_vc {
-        utils::join_voice_channel(ctx, &guild.id, &vc).await?
+        utils::join_voice_channel(ctx, &guild, &vc).await?
     } else {
         msg.channel_id
             .say(ctx, "you are not in a voice channel")
@@ -89,10 +89,10 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
     };
 
-    let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author.id);
+    let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author);
 
     let call = if let Some(vc) = maybe_vc {
-        utils::join_voice_channel(ctx, &guild.id, &vc).await?
+        utils::join_voice_channel(ctx, &guild, &vc).await?
     } else {
         msg.channel_id
             .say(ctx, "you are not in a voice channel")

@@ -1,3 +1,6 @@
+mod prelude {
+    pub use tracing::*;
+}
 mod textchannel;
 mod voice;
 

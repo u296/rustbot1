@@ -9,16 +9,18 @@ use serenity::{async_trait, model::prelude::*};
 use serenity::prelude::*;
 use songbird::{Call, Event, EventContext, EventHandler, Songbird};
 
-pub fn get_user_voice_channel(guild: &Guild, user: &UserId) -> Option<ChannelId> {
-    match guild.voice_states.get(user) {
+#[instrument]
+pub fn get_user_voice_channel(guild: &Guild, user: &User) -> Option<ChannelId> {
+    match guild.voice_states.get(&user.id) {
         Some(v) => v.channel_id,
         None => None,
     }
 }
 
+#[instrument(skip(ctx))]
 pub async fn join_voice_channel(
     ctx: &Context,
-    guild: &GuildId,
+    guild: &Guild,
     channel: &ChannelId,
 ) -> Result<Arc<Mutex<Call>>, Box<dyn Error + Send + Sync>> {
     if let Some(call) = get_guild_call(ctx, guild).await {
@@ -35,7 +37,7 @@ pub async fn join_voice_channel(
         .expect("no songbird client")
         .clone();
 
-    let gi: u64 = guild.0;
+    let gi: u64 = guild.id.into();
     let ci: u64 = channel.0;
 
     let (call, join_res) = man.join(gi, ci).await;
@@ -50,7 +52,7 @@ pub async fn join_voice_channel(
 pub async fn join_user(
     ctx: &Context,
     guild: &Guild,
-    user: &UserId,
+    user: &User,
 ) -> Result<Arc<Mutex<Call>>, Box<dyn Error + Send + Sync>> {
     let guild_id = guild.id;
 
@@ -106,13 +108,14 @@ pub async fn leave(ctx: &Context, guild: &Guild) -> Result<(), Box<dyn Error + S
     Ok(())
 }
 
-pub async fn get_guild_call(ctx: &Context, guild: &GuildId) -> Option<Arc<Mutex<Call>>> {
+#[instrument(skip(ctx))]
+pub async fn get_guild_call(ctx: &Context, guild: &Guild) -> Option<Arc<Mutex<Call>>> {
     let man = songbird::get(ctx)
         .await
         .expect("no songbird client")
         .clone();
 
-    let gi: u64 = guild.0;
+    let gi: u64 = guild.id.into();
 
     man.get(gi)
 }
@@ -126,8 +129,6 @@ struct SongEndLeaver {
 impl EventHandler for SongEndLeaver {
     async fn act(&self, ctx: &EventContext<'_>) -> Option<Event> {
         if let EventContext::Track(_tracks) = ctx {
-            //debug!("tracks: {:#?}", tracks);
-
             let call = self.manager.get(self.guild_id);
 
             if call.is_some() {
@@ -139,6 +140,7 @@ impl EventHandler for SongEndLeaver {
     }
 }
 
+#[instrument]
 pub async fn play_from_input(
     call: Arc<Mutex<Call>>,
     source: songbird::input::Input,

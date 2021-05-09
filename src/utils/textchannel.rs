@@ -1,3 +1,4 @@
+use super::prelude::*;
 use std::collections::HashMap;
 use std::error::Error;
 use std::time::{Duration, Instant};
@@ -42,9 +43,13 @@ impl TypeMapKey for TextChannelDataMap {
     type Value = Self;
 }
 
+#[instrument(skip(s))]
 fn get_latest_split_index(s: impl AsRef<str>, limit: usize) -> usize {
+    trace!("s: {}", s.as_ref());
+
     for i in (0..limit).rev() {
         if s.as_ref().is_char_boundary(i) {
+            trace!("index: {}", i);
             return i;
         }
     }
@@ -52,7 +57,10 @@ fn get_latest_split_index(s: impl AsRef<str>, limit: usize) -> usize {
     panic!("string not splittable");
 }
 
+#[instrument(skip(line))]
 fn split_line_to_sendable_chunks(line: impl AsRef<str>) -> Vec<String> {
+    trace!("line: {}", line.as_ref());
+
     let mut chunks = vec![String::new()];
 
     let mut chunk_begin_index = 0;
@@ -70,7 +78,10 @@ fn split_line_to_sendable_chunks(line: impl AsRef<str>) -> Vec<String> {
     chunks
 }
 
+#[instrument(skip(s))]
 fn split_string_to_sendable_chunks(s: impl AsRef<str>) -> Vec<String> {
+    trace!("s: {}", s.as_ref());
+
     let mut chunks = vec![String::new()];
 
     for line in s.as_ref().lines() {
@@ -84,6 +95,8 @@ fn split_string_to_sendable_chunks(s: impl AsRef<str>) -> Vec<String> {
         }
     }
 
+    trace!("chunks.len: {}", chunks.len());
+
     chunks
 }
 
@@ -96,6 +109,7 @@ fn time_has_passed(passed: Duration, last_time: &mut Instant) -> bool {
     }
 }
 
+#[instrument(skip(ctx, lines))]
 pub async fn send_buffered_text<S, I>(
     ctx: &Context,
     channel: ChannelId,
@@ -111,6 +125,7 @@ where
 
     while let Some(line) = lines.next().await {
         let line = String::from_utf8(strip_ansi_escapes::strip(line.as_ref())?)?;
+        trace!("received new line: {}", line);
 
         output_buf.push_str(&format!("\n{}", line));
 
@@ -118,6 +133,7 @@ where
             send_chunks.extend(split_string_to_sendable_chunks(output_buf));
             output_buf = String::new();
 
+            debug!("sending {} chunks", send_chunks.len());
             // loop here so we actually send something
             while !send_chunks.is_empty() {
                 let chunk = send_chunks.remove(0);
@@ -129,6 +145,7 @@ where
         }
     }
     send_chunks.extend(split_string_to_sendable_chunks(output_buf));
+    debug!("stream empty, remaining chunks: {}", send_chunks.len());
     for chunk in send_chunks {
         if !chunk.trim().is_empty() {
             channel.say(&ctx, chunk).await?;
@@ -148,6 +165,7 @@ pub async fn send_text_file<'a, P: Into<AttachmentType<'a>>, I: Iterator<Item = 
     Ok(())
 }
 
+#[instrument(skip(http, mention))]
 pub async fn repeat_mention<M: Mentionable>(
     http: &impl AsRef<Http>,
     channel: ChannelId,
@@ -169,6 +187,7 @@ fn format_mention_string(mentions: &[&(dyn Mentionable + Sync)]) -> String {
         .fold(String::new(), |acc, x| format!("{} {}", acc, x.mention()))
 }
 
+#[instrument(skip(http, mention))]
 pub async fn repeat_mention_multiple(
     http: &impl AsRef<Http>,
     channel: ChannelId,
