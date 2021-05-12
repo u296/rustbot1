@@ -2,6 +2,7 @@ use super::prelude::*;
 use std::collections::HashMap;
 use std::error::Error;
 use std::time::{Duration, Instant};
+use std::ops::Deref;
 
 use serenity::constants::MESSAGE_CODE_LIMIT;
 use serenity::http::AttachmentType;
@@ -25,7 +26,7 @@ impl TextChannelDataMap {
     }
 }
 
-impl std::ops::Deref for TextChannelDataMap {
+impl Deref for TextChannelDataMap {
     type Target = HashMap<ChannelId, TextChannelData>;
 
     fn deref(&self) -> &Self::Target {

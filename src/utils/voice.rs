@@ -8,6 +8,9 @@ use serenity::{async_trait, model::prelude::*};
 use serenity::prelude::*;
 use songbird::{Call, Event, EventContext, EventHandler, Songbird};
 
+
+
+
 #[instrument]
 pub fn get_user_voice_channel(guild: &Guild, user: &User) -> Option<ChannelId> {
     match guild.voice_states.get(&user.id) {
