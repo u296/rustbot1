@@ -41,7 +41,19 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         return Ok(());
     };
 
-    utils::play_from_input(call, source).await
+    let trackhandle = utils::play_from_input(call, source).await;
+
+    ctx.data
+        .write()
+        .await
+        .get_mut::<utils::GuildDataMap>()
+        .expect("no GuildDataMap in typemap")
+        .entry(msg.guild_id.unwrap())
+        .or_default()
+        .tracks
+        .push(trackhandle);
+
+    Ok(())
 }
 
 #[command]
@@ -103,5 +115,17 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         return Ok(());
     };
 
-    utils::play_from_input(call, source).await
+    let trackhandle = utils::play_from_input(call, source).await;
+
+    ctx.data
+        .write()
+        .await
+        .get_mut::<utils::GuildDataMap>()
+        .expect("no GuildDataMap in typemap")
+        .entry(msg.guild_id.unwrap())
+        .or_default()
+        .tracks
+        .push(trackhandle);
+
+    Ok(())
 }

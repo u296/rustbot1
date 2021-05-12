@@ -1,4 +1,5 @@
 mod prelude {
+    pub use songbird::tracks::TrackHandle;
     pub use serenity::prelude::*;
     pub use tracing::*;
 }

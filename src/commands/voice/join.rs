@@ -33,5 +33,22 @@ async fn leave(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         msg.channel_id.say(ctx, "not in a call").await?;
     }
 
+    for track in ctx.data
+        .write()
+        .await
+        .get_mut::<utils::GuildDataMap>()
+        .expect("no GuildDataMap in typemap")
+        .entry(msg.guild_id.unwrap())
+        .or_default()
+        .tracks
+        .drain(0..) {
+        match track.stop() {
+            Ok(_) => (),
+            Err(e) => {
+                error!("error stopping track: {}",e);
+            }
+        }
+    }
+
     Ok(())
 }

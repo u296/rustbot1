@@ -5,10 +5,11 @@ use super::prelude::*;
 use songbird::tracks::TrackHandle;
 use serenity::model::prelude::*;
 
-
+#[derive(Clone, Debug, Default)]
 pub struct GuildData {
-    track: Option<TrackHandle>
+    pub tracks: Vec<TrackHandle>
 }
+
 
 pub struct GuildDataMap(pub HashMap<GuildId, GuildData>);
 

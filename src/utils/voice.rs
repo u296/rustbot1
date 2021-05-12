@@ -1,3 +1,5 @@
+use super::prelude::*;
+
 use std::error::Error;
 use std::sync::Arc;
 
@@ -86,8 +88,6 @@ impl EventHandler for SongEndLeaver {
 pub async fn play_from_input(
     call: Arc<Mutex<Call>>,
     source: songbird::input::Input,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let _song = call.lock().await.play_source(source);
-
-    Ok(())
+) -> TrackHandle {
+    call.lock().await.play_source(source)
 }
