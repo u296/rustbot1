@@ -124,6 +124,7 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
                 .register_songbird()
                 .type_map_insert::<config::Config>(config)
                 .type_map_insert::<utils::TextChannelDataMap>(utils::TextChannelDataMap::new())
+                .type_map_insert::<utils::GuildDataMap>(utils::GuildDataMap::new())
                 .await?;
 
             match client.start().await {
