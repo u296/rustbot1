@@ -7,11 +7,6 @@ use tokio::io::AsyncReadExt;
 #[aliases("p")]
 #[only_in(guilds)]
 async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    play_impl(ctx, msg, args).await
-}
-
-#[instrument(skip(ctx))]
-async fn play_impl(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let text = args.message();
     let guild = msg.guild(ctx).await.unwrap();
 
@@ -53,11 +48,6 @@ async fn play_impl(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[aliases("pl", "play local", "play saved")]
 #[only_in(guilds)]
 async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    play_local_impl(ctx, msg, args).await
-}
-
-#[instrument(skip(ctx))]
-async fn play_local_impl(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let text = args.message();
     let guild = msg.guild(ctx).await.unwrap();
 
