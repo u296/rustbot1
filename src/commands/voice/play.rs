@@ -129,3 +129,27 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     Ok(())
 }
+
+#[command]
+#[only_in(guilds)]
+#[aliases("shutup", "stfu")]
+async fn stop(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    for track in ctx.data
+        .write()
+        .await
+        .get_mut::<utils::GuildDataMap>()
+        .expect("no GuildDataMap in typemap")
+        .entry(msg.guild_id.unwrap())
+        .or_default()
+        .tracks
+        .drain(0..) {
+        match track.stop() {
+            Ok(_) => (),
+            Err(e) => {
+                error!("error stopping track: {}",e);
+            }
+        }
+    }
+
+    Ok(())
+}
