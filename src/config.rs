@@ -23,19 +23,18 @@ pub async fn read_config() -> Result<Config, Box<dyn Error>> {
 
 #[test]
 fn config_deserialize() {
-    let text = 
-r#"{
+    let text = r#"{
     "prefix": ".",
     "enable_exec": false
 }"#;
 
     let wanted = Config {
         prefix: String::from("."),
-        enable_exec: false
+        enable_exec: false,
     };
 
     match serde_json::from_str::<Config>(text) {
         Ok(c) => assert_eq!(c, wanted),
-        Err(_) => panic!("assertion failed")
+        Err(_) => panic!("assertion failed"),
     }
 }

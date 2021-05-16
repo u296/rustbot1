@@ -3,13 +3,9 @@ use super::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
 
-
 use serenity::{async_trait, model::prelude::*};
 
 use songbird::{Call, Event, EventContext, EventHandler, Songbird};
-
-
-
 
 #[instrument]
 pub fn get_user_voice_channel(guild: &Guild, user: &User) -> Option<ChannelId> {

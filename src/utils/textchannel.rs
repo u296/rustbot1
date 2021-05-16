@@ -1,8 +1,8 @@
 use super::prelude::*;
 use std::collections::HashMap;
 use std::error::Error;
-use std::time::{Duration, Instant};
 use std::ops::Deref;
+use std::time::{Duration, Instant};
 
 use serenity::constants::MESSAGE_CODE_LIMIT;
 use serenity::http::AttachmentType;

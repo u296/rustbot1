@@ -21,6 +21,7 @@ serde_json = "*"
 rand = "*"
 tracing = "*"
 tracing-subscriber = {version = "*", features = ["fmt"]}
+uuid = "*"
 
 
 [dependencies.serenity]
