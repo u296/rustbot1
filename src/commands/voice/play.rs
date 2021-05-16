@@ -133,7 +133,7 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[command]
 #[only_in(guilds)]
 #[aliases("shutup", "stfu")]
-async fn stop(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     for track in ctx.data
         .write()
         .await

@@ -10,7 +10,6 @@ use serenity::http::Http;
 use serenity::model::prelude::*;
 
 use futures::prelude::*;
-use serenity::prelude::*;
 
 #[derive(Default, Clone, Copy, Debug)]
 pub struct TextChannelData {

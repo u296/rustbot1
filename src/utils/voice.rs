@@ -3,11 +3,9 @@ use super::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
 
-use tracing::*;
 
 use serenity::{async_trait, model::prelude::*};
 
-use serenity::prelude::*;
 use songbird::{Call, Event, EventContext, EventHandler, Songbird};
 
 
