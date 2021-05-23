@@ -72,15 +72,14 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     play_backend(ctx, msg, args, source).await
 }
 
-
-
 #[command]
 #[aliases("pl", "play local", "play saved")]
 #[only_in(guilds)]
 async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let source = {
         let filename = {
-            let manifest= utils::ContentManifest::read_from_file(&utils::CONTENT_MANIFEST_PATH).await?;
+            let manifest =
+                utils::ContentManifest::read_from_file(&utils::CONTENT_MANIFEST_PATH).await?;
 
             match manifest.uploads.get(args.message()) {
                 Some(f) => f.clone(),

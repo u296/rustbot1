@@ -5,11 +5,11 @@ mod prelude {
 }
 
 mod guild;
+mod local;
 mod textchannel;
 mod voice;
-mod local;
 
 pub use guild::*;
+pub use local::*;
 pub use textchannel::*;
 pub use voice::*;
-pub use local::*;

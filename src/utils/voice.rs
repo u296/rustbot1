@@ -21,7 +21,6 @@ pub async fn join_voice_channel(
     guild: &Guild,
     channel: &ChannelId,
 ) -> Result<Arc<Mutex<Call>>, Box<dyn Error + Send + Sync>> {
-
     let man = songbird::get(ctx)
         .await
         .expect("no songbird client")
@@ -35,8 +34,6 @@ pub async fn join_voice_channel(
             }
         }
     }
-
-    
 
     let gi: u64 = guild.id.into();
     let ci: u64 = channel.0;
