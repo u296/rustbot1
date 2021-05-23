@@ -1,8 +1,8 @@
+use lazy_static::lazy_static;
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
 use std::process::exit;
-use lazy_static::lazy_static;
 
 use tracing::*;
 
@@ -40,6 +40,12 @@ lazy_static! {
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
+        let typemap = ctx.data.read().await;
+
+        let config = typemap
+            .get::<config::Config>()
+            .expect("no config in typemap");
+
         let mut s = String::new();
         if msg.content.contains("69") {
             s.push_str("\nnice");
@@ -47,7 +53,7 @@ impl EventHandler for Handler {
         if msg.content.contains("420") {
             s.push_str("\nblaze it");
         }
-        if msg.embeds.is_empty() && URL_REGEX.is_match(&msg.content) {
+        if config.embed_fail_react && msg.embeds.is_empty() && URL_REGEX.is_match(&msg.content) {
             s.push_str("\nepic embed fail");
         }
         if !s.is_empty() {
@@ -103,7 +109,7 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
     tracing_subscriber::fmt::init();
     let token = get_token().await?;
 
-    let config = config::read_config().await?;
+    let config = config::read_config(config::CONFIG_PATH).await?;
 
     match validate_token(&token) {
         Ok(()) => {
