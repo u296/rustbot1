@@ -21,7 +21,13 @@ pub async fn join_voice_channel(
     guild: &Guild,
     channel: &ChannelId,
 ) -> Result<Arc<Mutex<Call>>, Box<dyn Error + Send + Sync>> {
-    if let Some(call) = get_guild_call(ctx, guild).await {
+
+    let man = songbird::get(ctx)
+        .await
+        .expect("no songbird client")
+        .clone();
+
+    if let Some(call) = man.get(guild.id) {
         if let Some(current_channel) = call.clone().lock().await.current_channel() {
             if current_channel.0 == channel.0 {
                 return Ok(call);
@@ -30,10 +36,7 @@ pub async fn join_voice_channel(
         }
     }
 
-    let man = songbird::get(ctx)
-        .await
-        .expect("no songbird client")
-        .clone();
+    
 
     let gi: u64 = guild.id.into();
     let ci: u64 = channel.0;
