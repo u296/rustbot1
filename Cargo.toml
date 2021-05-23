@@ -22,6 +22,8 @@ rand = "*"
 tracing = "*"
 tracing-subscriber = {version = "*", features = ["fmt"]}
 uuid = "*"
+regex = "*"
+lazy_static = "*"
 
 
 [dependencies.serenity]

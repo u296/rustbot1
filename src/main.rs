@@ -2,6 +2,7 @@ use std::env;
 use std::error::Error;
 use std::path::PathBuf;
 use std::process::exit;
+use lazy_static::lazy_static;
 
 use tracing::*;
 
@@ -32,6 +33,9 @@ impl Handler {
         Handler {}
     }
 }
+lazy_static! {
+    static ref URL_REGEX: regex::Regex = regex::Regex::new(r#"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"#).unwrap();
+}
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -43,7 +47,10 @@ impl EventHandler for Handler {
         if msg.content.contains("420") {
             s.push_str("\nblaze it");
         }
-        if !msg.content.is_empty() {
+        if msg.embeds.is_empty() && URL_REGEX.is_match(&msg.content) {
+            s.push_str("\nepic embed fail");
+        }
+        if !s.is_empty() {
             utils::send_buffered_text(
                 &ctx,
                 msg.channel_id,
