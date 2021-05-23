@@ -2,7 +2,6 @@ use super::prelude::*;
 
 use serenity::async_trait;
 use songbird::{EventContext, EventHandler};
-use std::collections::HashMap;
 use std::time::Duration;
 use tokio::io::AsyncReadExt;
 
@@ -74,13 +73,15 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     play_backend(ctx, msg, args, source).await
 }
 
+
+
 #[command]
 #[aliases("pl", "play local", "play saved")]
 #[only_in(guilds)]
 async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let source = {
         let filename = {
-            let manifest: HashMap<String, String> =
+            let manifest: utils::ContentManifest =
                 match tokio::fs::File::open("content/manifest.json").await {
                     Ok(mut f) => {
                         let mut bytes = Vec::new();
@@ -91,7 +92,7 @@ async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                     Err(e) => return Err(e.into()),
                 };
 
-            match manifest.get(args.message()) {
+            match manifest.uploads.get(args.message()) {
                 Some(f) => f.clone(),
                 None => {
                     msg.channel_id.say(ctx, "no such file").await?;
