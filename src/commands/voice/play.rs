@@ -3,7 +3,6 @@ use super::prelude::*;
 use serenity::async_trait;
 use songbird::{EventContext, EventHandler};
 use std::time::Duration;
-use tokio::io::AsyncReadExt;
 
 use std::sync::Arc;
 
@@ -81,16 +80,7 @@ async fn play(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 async fn play_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let source = {
         let filename = {
-            let manifest: utils::ContentManifest =
-                match tokio::fs::File::open("content/manifest.json").await {
-                    Ok(mut f) => {
-                        let mut bytes = Vec::new();
-                        f.read_to_end(&mut bytes).await?;
-
-                        serde_json::from_slice(&bytes)?
-                    }
-                    Err(e) => return Err(e.into()),
-                };
+            let manifest= utils::ContentManifest::read_from_file(&utils::CONTENT_MANIFEST_PATH).await?;
 
             match manifest.uploads.get(args.message()) {
                 Some(f) => f.clone(),
