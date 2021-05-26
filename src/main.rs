@@ -47,13 +47,13 @@ impl EventHandler for Handler {
             .expect("no config in typemap");
 
         let mut s = String::new();
-        if msg.content.contains("69") {
+        if config.reactions.nice_69 && msg.content.contains("69") {
             s.push_str("\nnice");
         }
-        if msg.content.contains("420") {
+        if config.reactions.blazeit_420 && msg.content.contains("420") {
             s.push_str("\nblaze it");
         }
-        if config.embed_fail_react && msg.embeds.is_empty() && URL_REGEX.is_match(&msg.content) {
+        if config.reactions.embed_fail && msg.embeds.is_empty() && URL_REGEX.is_match(&msg.content) {
             s.push_str("\nepic embed fail");
         }
         if !s.is_empty() {

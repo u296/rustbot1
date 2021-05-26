@@ -6,11 +6,18 @@ use serenity::prelude::*;
 
 pub const CONFIG_PATH: &str = "config.json";
 
+#[derive(PartialEq, Clone, Debug, Default, Deserialize)]
+pub struct ReactionOptions {
+    pub nice_69: bool,
+    pub blazeit_420: bool,
+    pub embed_fail: bool,
+}
+
 #[derive(PartialEq, Clone, Debug, Deserialize)]
 pub struct Config {
     pub prefix: String,
     pub enable_exec: bool,
-    pub embed_fail_react: bool,
+    pub reactions: ReactionOptions,
 }
 
 impl TypeMapKey for Config {
@@ -30,13 +37,21 @@ fn config_deserialize() {
     let text = r#"{
     "prefix": ".",
     "enable_exec": false,
-    "embed_fail_react": true
+    "reactions": {
+        "nice_69": true,
+        "blazeit_420": true,
+        "embed_fail": false
+    }
 }"#;
 
     let wanted = Config {
         prefix: String::from("."),
         enable_exec: false,
-        embed_fail_react: true,
+        reactions: ReactionOptions {
+            nice_69: true,
+            blazeit_420: true,
+            embed_fail: false,
+        },
     };
 
     match serde_json::from_str::<Config>(text) {
