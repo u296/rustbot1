@@ -20,11 +20,14 @@ async fn select_random(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 }
 
 #[command]
+#[only_in(guilds)]
 async fn split(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let guild = msg.guild(ctx).await.unwrap();
     
     match msg.guild(ctx).await.unwrap().voice_states.get(&msg.author.id) {
-        None => (),
+        None => {
+            msg.channel_id.say(ctx, "you are not in a voice channel").await?;
+        },
         Some(c) => {
             let mut users = vec![msg.author.id];
             for (user, voicestate) in guild.voice_states.iter() {
@@ -51,6 +54,7 @@ async fn split(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 .find(|c| c.name == args.message()) {
                     Some(channel) => channel,
                     None => {
+                        msg.channel_id.say(ctx, "you need to specify a voice channel to split to").await?;
                         return Ok(())
                     }
                 };
