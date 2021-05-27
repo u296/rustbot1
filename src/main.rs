@@ -3,6 +3,7 @@ use std::env;
 use std::error::Error;
 use std::path::PathBuf;
 use std::process::exit;
+use std::time::Duration;
 
 use tracing::*;
 
@@ -56,7 +57,10 @@ impl EventHandler for Handler {
         }
         if config.reactions.embed_fail && msg.embeds.is_empty() && EMBED_FAIL_REGEX.is_match(&msg.content)
         {
-            s.push_str("\nepic embed fail");
+            tokio::time::sleep(Duration::from_millis(500)).await;
+            if msg.embeds.is_empty() {
+                s.push_str("\nepic embed fail");
+            }
         }
         if !s.is_empty() {
             utils::send_buffered_text(
