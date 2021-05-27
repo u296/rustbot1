@@ -17,7 +17,6 @@ impl Handler {
     }
 }
 lazy_static! {
-    static ref URL_REGEX: regex::Regex = regex::Regex::new(r#"^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@|\d{0,3}(?:\.\d{1,3}){3}|(?:(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)(?:\.(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)*(?:\.[a-z\x{00a1}-\x{ffff}]{2,6}))(?::\d+)?(?:[^\s]*)?$"#).unwrap();
     static ref EMBED_FAIL_REGEX: regex::Regex = regex::Regex::new(r#"^https?://([A-z]+\.)+[A-z]+(/[A-z-1-9]+)*\.(png|jpg|gif|mp4|webm|mov)$"#).unwrap();
 }
 
