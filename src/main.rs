@@ -1,25 +1,29 @@
-use lazy_static::lazy_static;
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
 use std::process::exit;
-use std::time::Duration;
 
 use tracing::*;
 
 use serenity::{
-    async_trait,
     framework::standard::{macros::hook, CommandError, StandardFramework},
-    model::{channel::Message, gateway::Ready},
+    model::{channel::Message},
 };
 
 use songbird::SerenityInit;
-
 use serenity::client::bridge::gateway::GatewayIntents;
 use serenity::prelude::*;
 
+pub mod prelude {
+    pub use std::error::Error;
+    pub use serenity::prelude::*;
+    pub use tracing::*;
+    pub use super::utils;
+}
+
 mod commands;
 mod config;
+mod eventhandler;
 pub mod utils;
 
 /// the md5 hash of the key must match this
@@ -27,56 +31,7 @@ const KEY_MD5_CHECKSUM_BYTES: [u8; 16] = [
     133, 23, 51, 212, 218, 233, 16, 89, 86, 135, 72, 187, 246, 150, 20, 217,
 ];
 
-struct Handler;
 
-impl Handler {
-    pub fn new() -> Handler {
-        Handler {}
-    }
-}
-lazy_static! {
-    static ref URL_REGEX: regex::Regex = regex::Regex::new(r#"^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@|\d{1,3}(?:\.\d{1,3}){3}|(?:(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)(?:\.(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)*(?:\.[a-z\x{00a1}-\x{ffff}]{2,6}))(?::\d+)?(?:[^\s]*)?$"#).unwrap();
-    static ref EMBED_FAIL_REGEX: regex::Regex = regex::Regex::new(r#"^https?://([A-z]+\.)+[A-z]+(/[A-z0-9]+)*\.(png|jpg|gif|mp4|webm|mov)$"#).unwrap();
-}
-
-#[async_trait]
-impl EventHandler for Handler {
-    async fn message(&self, ctx: Context, msg: Message) {
-        let typemap = ctx.data.read().await;
-
-        let config = typemap
-            .get::<config::Config>()
-            .expect("no config in typemap");
-
-        let mut s = String::new();
-        if config.reactions.nice_69 && msg.content.contains("69") {
-            s.push_str("\nnice");
-        }
-        if config.reactions.blazeit_420 && msg.content.contains("420") {
-            s.push_str("\nblaze it");
-        }
-        if config.reactions.embed_fail && msg.embeds.is_empty() && EMBED_FAIL_REGEX.is_match(&msg.content)
-        {
-            tokio::time::sleep(Duration::from_millis(500)).await;
-            if msg.embeds.is_empty() {
-                s.push_str("\nepic embed fail");
-            }
-        }
-        if !s.is_empty() {
-            utils::send_buffered_text(
-                &ctx,
-                msg.channel_id,
-                futures::stream::iter(s.trim().lines()),
-            )
-            .await
-            .unwrap();
-        }
-    }
-
-    async fn ready(&self, _: Context, ready: Ready) {
-        info!("{} connected", ready.user.name);
-    }
-}
 
 #[hook]
 async fn after_hook(_: &Context, _: &Message, cmd_name: &str, error: Result<(), CommandError>) {
@@ -137,7 +92,7 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
                 | GatewayIntents::GUILD_VOICE_STATES;
 
             let mut client = Client::builder(&token)
-                .event_handler(Handler::new())
+                .event_handler(eventhandler::Handler::new())
                 .intents(gateway_intents)
                 .framework(framework)
                 .register_songbird()
