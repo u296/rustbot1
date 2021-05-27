@@ -9,8 +9,6 @@ use std::sync::Arc;
 use songbird::Songbird;
 use uuid::Uuid;
 
-use serenity::model::prelude::*;
-
 const IDLE_LEAVE_TIME: Duration = Duration::from_secs(10);
 
 struct IdleLeaver {
