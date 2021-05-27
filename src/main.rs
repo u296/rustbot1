@@ -35,6 +35,7 @@ impl Handler {
 }
 lazy_static! {
     static ref URL_REGEX: regex::Regex = regex::Regex::new(r#"^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@|\d{1,3}(?:\.\d{1,3}){3}|(?:(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)(?:\.(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)*(?:\.[a-z\x{00a1}-\x{ffff}]{2,6}))(?::\d+)?(?:[^\s]*)?$"#).unwrap();
+    static ref EMBED_FAIL_REGEX: regex::Regex = regex::Regex::new(r#"^https?://([A-z]+\.)+[A-z]+(/[A-z0-9]+)*\.(png|jpg|gif|mp4|webm|mov)$"#).unwrap();
 }
 
 #[async_trait]
@@ -53,7 +54,8 @@ impl EventHandler for Handler {
         if config.reactions.blazeit_420 && msg.content.contains("420") {
             s.push_str("\nblaze it");
         }
-        if config.reactions.embed_fail && msg.embeds.is_empty() && URL_REGEX.is_match(&msg.content) {
+        if config.reactions.embed_fail && msg.embeds.is_empty() && EMBED_FAIL_REGEX.is_match(&msg.content)
+        {
             s.push_str("\nepic embed fail");
         }
         if !s.is_empty() {
