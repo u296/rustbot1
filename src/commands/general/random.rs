@@ -23,49 +23,54 @@ async fn select_random(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 #[only_in(guilds)]
 async fn split(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let guild = msg.guild(ctx).await.unwrap();
-    
-    match msg.guild(ctx).await.unwrap().voice_states.get(&msg.author.id) {
+
+    match msg
+        .guild(ctx)
+        .await
+        .unwrap()
+        .voice_states
+        .get(&msg.author.id)
+    {
         None => {
-            msg.channel_id.say(ctx, "you are not in a voice channel").await?;
-        },
+            msg.channel_id
+                .say(ctx, "you are not in a voice channel")
+                .await?;
+        }
         Some(c) => {
-            let mut users = vec![msg.author.id];
-            for (user, voicestate) in guild.voice_states.iter() {
-                if voicestate.channel_id == c.channel_id {
-                    users.push(*user);
-                }
+            if c.channel_id.is_none() {
+                msg.channel_id
+                    .say(ctx, "you are not in a voice channel")
+                    .await?;
+                return Ok(());
             }
+
+            let mut users = utils::get_users_in_voice_channel(&guild, &c.channel_id.unwrap());
 
             users.shuffle(&mut thread_rng());
 
-            let move_users = &users[0..(users.len()/2)];
-
-
+            let move_users = &users[0..(users.len() / 2)];
 
             use serenity::model::channel::ChannelType;
 
-            let voicechannels: Vec<_> = guild.channels
+            let voicechannels: Vec<_> = guild
+                .channels
                 .iter()
                 .filter(|(_, channel)| channel.kind == ChannelType::Voice)
                 .map(|(_, channel)| channel)
                 .collect();
-            
-            let move_channel = *match voicechannels.iter()
-                .find(|c| c.name == args.message()) {
-                    Some(channel) => channel,
-                    None => {
-                        msg.channel_id.say(ctx, "you need to specify a voice channel to split to").await?;
-                        return Ok(())
-                    }
-                };
-            
+
+            let move_channel = *match voicechannels.iter().find(|c| c.name == args.message()) {
+                Some(channel) => channel,
+                None => {
+                    msg.channel_id
+                        .say(ctx, "you need to specify a voice channel to split to")
+                        .await?;
+                    return Ok(());
+                }
+            };
 
             for user in move_users.iter() {
-                guild.move_member(
-                    ctx,
-                    user,
-                    move_channel
-                ).await?;
+                guild.move_member(ctx, user, move_channel).await?;
             }
         }
     }

@@ -15,6 +15,21 @@ pub fn get_user_voice_channel(guild: &Guild, user: &User) -> Option<ChannelId> {
     }
 }
 
+#[instrument]
+pub fn get_users_in_voice_channel(guild: &Guild, channel: &ChannelId) -> Vec<UserId> {
+    guild
+        .voice_states
+        .iter()
+        .filter_map(|(user_id, voicestate)| {
+            if voicestate.channel_id == Some(*channel) {
+                Some(*user_id)
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
 #[instrument(skip(ctx))]
 pub async fn join_voice_channel(
     ctx: &Context,
