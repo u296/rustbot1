@@ -33,9 +33,9 @@ async fn upload(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         }
     };
 
-    let mut table: HashMap<String, String> = serde_json::from_str(&content)?;
+    let mut table: utils::ContentManifest = serde_json::from_str(&content)?;
 
-    table.insert(savename.into(), format!("{}.opus", attachment.filename));
+    table.uploads.insert(savename.into(), format!("{}.opus", attachment.filename));
 
     let mut file = tokio::fs::OpenOptions::new()
         .write(true)
@@ -88,7 +88,8 @@ async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
             let mut bytes = Vec::new();
             f.read_to_end(&mut bytes).await?;
 
-            let list = serde_json::from_slice::<HashMap<String, String>>(&bytes)?
+            let list = serde_json::from_slice::<utils::ContentManifest>(&bytes)?
+                .uploads
                 .iter()
                 .map(|(key, _)| key)
                 .cloned()

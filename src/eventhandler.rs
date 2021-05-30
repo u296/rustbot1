@@ -16,6 +16,7 @@ impl Handler {
         Handler {}
     }
 }
+
 lazy_static! {
     static ref EMBED_FAIL_REGEX: regex::Regex = regex::Regex::new(r#"^https?://([A-z]+\.)+[A-z]+(/[A-z-1-9]+)*\.(png|jpg|gif|mp4|webm|mov)$"#).unwrap();
 }
