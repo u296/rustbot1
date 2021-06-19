@@ -21,26 +21,21 @@ struct IdleLeaver {
 #[async_trait]
 impl EventHandler for IdleLeaver {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<songbird::Event> {
+        let mut cringe = self.typemap.write().await;
+
+        let guild_data = cringe
+            .get_mut::<crate::utils::GuildDataMap>()
+            .expect("no GuildDataMap in typemap")
+            .get_mut(&self.guild_id)?;
+
+        guild_data.tracks.retain(|t| t.uuid() != self.track_uuid);
+
         tokio::time::sleep(IDLE_LEAVE_TIME).await;
 
-        // after waiting, the last played track still hasn't changed
-        // which means that nothing has been played since
-        if self
-            .typemap
-            .read()
-            .await
-            .get::<crate::utils::GuildDataMap>()
-            .expect("no GuildDataMap in typemap")
-            .get(&self.guild_id)
-            .unwrap_or(&Default::default())
-            .last_played_track
-            == Some(self.track_uuid)
-        {
-            // it is not guaranteed that we are in the call anymore
+        if guild_data.tracks.is_empty() {
             if let Some(call) = self.manager.get(self.guild_id) {
-                let mut b = call.lock().await;
-
-                match b.leave().await {
+                let mut c = call.lock().await;
+                match c.leave().await {
                     Ok(_) => (),
                     Err(e) => error!("{}", e),
                 }
