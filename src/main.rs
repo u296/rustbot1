@@ -7,18 +7,18 @@ use tracing::*;
 
 use serenity::{
     framework::standard::{macros::hook, CommandError, StandardFramework},
-    model::{channel::Message},
+    model::channel::Message,
 };
 
-use songbird::SerenityInit;
 use serenity::client::bridge::gateway::GatewayIntents;
 use serenity::prelude::*;
+use songbird::SerenityInit;
 
 pub mod prelude {
-    pub use std::error::Error;
-    pub use serenity::prelude::*;
-    pub use tracing::*;
     pub use super::utils;
+    pub use serenity::prelude::*;
+    pub use std::error::Error;
+    pub use tracing::*;
 }
 
 mod commands;
@@ -30,8 +30,6 @@ pub mod utils;
 const KEY_MD5_CHECKSUM_BYTES: [u8; 16] = [
     133, 23, 51, 212, 218, 233, 16, 89, 86, 135, 72, 187, 246, 150, 20, 217,
 ];
-
-
 
 #[hook]
 async fn after_hook(_: &Context, _: &Message, cmd_name: &str, error: Result<(), CommandError>) {

@@ -34,7 +34,9 @@ async fn upload(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     let mut table: utils::ContentManifest = serde_json::from_str(&content)?;
 
-    table.uploads.insert(savename.into(), format!("{}.opus", attachment.filename));
+    table
+        .uploads
+        .insert(savename.into(), format!("{}.opus", attachment.filename));
 
     let mut file = tokio::fs::OpenOptions::new()
         .write(true)

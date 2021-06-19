@@ -6,8 +6,8 @@ use std::time::Duration;
 use lazy_static::lazy_static;
 use serenity::{
     async_trait,
-    model::{channel::Message, gateway::Ready}
-}; 
+    model::{channel::Message, gateway::Ready},
+};
 
 pub struct Handler;
 
@@ -18,7 +18,10 @@ impl Handler {
 }
 
 lazy_static! {
-    static ref EMBED_FAIL_REGEX: regex::Regex = regex::Regex::new(r#"^https?://([A-z]+\.)+[A-z]+(/[A-z-1-9]+)*\.(png|jpg|gif|mp4|webm|mov)$"#).unwrap();
+    static ref EMBED_FAIL_REGEX: regex::Regex = regex::Regex::new(
+        r#"^https?://([A-z]+\.)+[A-z]+(/[A-z-1-9]+)*\.(png|jpg|gif|mp4|webm|mov)$"#
+    )
+    .unwrap();
 }
 
 #[async_trait]
@@ -37,7 +40,9 @@ impl EventHandler for Handler {
         if config.reactions.blazeit_420 && msg.content.contains("420") {
             s.push_str("\nblaze it");
         }
-        if config.reactions.embed_fail && msg.embeds.is_empty() && EMBED_FAIL_REGEX.is_match(&msg.content)
+        if config.reactions.embed_fail
+            && msg.embeds.is_empty()
+            && EMBED_FAIL_REGEX.is_match(&msg.content)
         {
             tokio::time::sleep(Duration::from_millis(500)).await;
             if msg.embeds.is_empty() {
