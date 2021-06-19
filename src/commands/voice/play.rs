@@ -149,8 +149,6 @@ async fn play_backend(
 
     guild_data_map.tracks.push(trackhandle.clone());
 
-    guild_data_map.last_played_track = Some(trackhandle.uuid());
-
     Ok(())
 }
 
