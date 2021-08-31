@@ -44,7 +44,7 @@ impl GuildData {
             Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {
                 let mut dir_path = path_to_persistent.clone();
                 dir_path.pop();
-                std::fs::create_dir_all(&path_to_persistent).unwrap();
+                std::fs::create_dir_all(dir_path).unwrap();
                 let newfile = File::create(path_to_persistent).unwrap();
 
                 let persistent = Default::default();
