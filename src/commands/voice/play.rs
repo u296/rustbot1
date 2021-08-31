@@ -133,7 +133,7 @@ async fn play_backend(
     trackhandle.add_event(
         songbird::Event::Track(songbird::TrackEvent::End),
         IdleLeaver {
-            manager: songbird::get(ctx).await.unwrap(),
+            manager: songbird::get(ctx).await.unwrap().clone(),
             typemap: ctx.data.clone(),
             guild_id: guild.id,
             track_uuid: trackhandle.uuid(),

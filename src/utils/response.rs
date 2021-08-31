@@ -93,7 +93,7 @@ impl Response {
                     };
 
                     debug!("getting manager");
-                    let mgr = songbird::get(ctx).await.unwrap();
+                    let mgr = songbird::get(ctx).await.unwrap().clone();
 
                     debug!("getting maybe vc");
                     let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author);
@@ -122,7 +122,7 @@ impl Response {
                     trackhandle.add_event(
                         songbird::Event::Track(songbird::TrackEvent::End),
                         Leaver {
-                            manager: songbird::get(ctx).await.unwrap(),
+                            manager: songbird::get(ctx).await.unwrap().clone(),
                             guild_id: guild.id,
                         },
                     )?;
