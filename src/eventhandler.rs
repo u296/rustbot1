@@ -21,7 +21,7 @@ impl EventHandler for Handler {
 
         let responses = typemap
             .get_mut::<utils::GuildDataMap>()
-            .expect("no config in typemap")
+            .expect("no GuildDataMap in typemap")
             .entry(msg.guild_id.unwrap())
             .or_insert(utils::GuildData::new(msg.guild_id.unwrap()))
             .persistent
