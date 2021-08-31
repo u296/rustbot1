@@ -31,6 +31,7 @@ impl EventHandler for Handler {
         if config.reactions.blazeit_420 && msg.content.contains("420") {
             s.push_str("\nblaze it");
         }
+
         if !s.is_empty() {
             utils::send_buffered_text(
                 &ctx,
