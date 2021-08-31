@@ -6,9 +6,9 @@ mod prelude {
 
 mod guild;
 mod local;
+mod response;
 mod textchannel;
 mod voice;
-mod response;
 
 pub use guild::*;
 pub use local::*;
