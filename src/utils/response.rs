@@ -92,13 +92,22 @@ impl Response {
                         }
                     };
 
+                    debug!("getting manager");
+                    let mgr = songbird::get(ctx).await.unwrap();
+
                     debug!("getting maybe vc");
                     let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author);
 
                     debug!("getting call");
                     let call = if let Some(vc) = maybe_vc {
                         debug!("joining voice channel");
-                        utils::join_voice_channel(ctx, &guild, &vc).await?
+                        match mgr.join(guild.id, vc).await {
+                            (x, Ok(_)) => x,
+                            (_, _) => {
+                                error!("gateway error");
+                                panic!();
+                            }
+                        }
                     } else {
                         msg.channel_id
                             .say(ctx, "you are not in a voice channel")
