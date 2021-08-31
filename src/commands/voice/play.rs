@@ -1,4 +1,5 @@
 use super::prelude::*;
+use crate::utils::GuildData;
 
 use serenity::async_trait;
 use songbird::{EventContext, EventHandler};
@@ -145,7 +146,7 @@ async fn play_backend(
         .get_mut::<utils::GuildDataMap>()
         .expect("no GuildDataMap in typemap")
         .entry(msg.guild_id.unwrap())
-        .or_default();
+        .or_insert(GuildData::new(guild.id));
 
     guild_data_map.tracks.push(trackhandle.clone());
 
@@ -163,7 +164,7 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         .get_mut::<utils::GuildDataMap>()
         .expect("no GuildDataMap in typemap")
         .entry(msg.guild_id.unwrap())
-        .or_default()
+        .or_insert(GuildData::new(msg.guild_id.unwrap()))
         .tracks
         .drain(0..)
     {

@@ -1,14 +1,68 @@
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
+use std::fs::*;
+use std::path::*;
 
 use super::prelude::*;
 use serenity::model::prelude::*;
 use songbird::tracks::TrackHandle;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug, Default)]
+use super::response::*;
+
+#[derive(Default, Clone, Debug, Serialize, Deserialize)]
+pub struct PersistentData {
+    responses: Vec<Response>,
+}
+
+#[derive(Clone, Debug)]
 pub struct GuildData {
+    id: GuildId,
     // tracks that are currently playing
     pub tracks: Vec<TrackHandle>,
+    pub persistent: PersistentData,
+}
+
+
+impl GuildData {
+    pub fn new(id: GuildId) -> Self {
+
+        let mut path_to_persistent = PathBuf::from(".");
+        path_to_persistent.push("guilds");
+        path_to_persistent.push(format!("{}.json", id.0.to_string()));
+
+        let persistent = match File::open(&path_to_persistent) {
+            Ok(f) => {
+                match serde_json::from_reader(f) {
+                    Ok(d) => d,
+                    Err(e) => {
+                        error!("could not parse guild persistent data: {}", e);
+                        Default::default()
+                    }
+                }
+            },
+            Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {
+                let mut dir_path = path_to_persistent.clone();
+                dir_path.pop();
+                std::fs::create_dir_all(&path_to_persistent).unwrap();
+                let newfile = File::create(path_to_persistent).unwrap();
+
+                let persistent = Default::default();
+                serde_json::to_writer_pretty(newfile, &persistent).unwrap();
+                persistent
+            },
+            Err(e) => {
+                error!("could not read guild persistent data: {}", e);
+                Default::default()
+            }
+        };
+
+        GuildData {
+            id: id,
+            tracks: vec![],
+            persistent: persistent,
+        }
+    }
 }
 
 pub struct GuildDataMap(pub HashMap<GuildId, GuildData>);

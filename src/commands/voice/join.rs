@@ -1,4 +1,5 @@
 use super::prelude::*;
+use crate::utils::GuildData;
 
 #[command]
 #[aliases("connect")]
@@ -40,7 +41,7 @@ async fn leave(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
         .get_mut::<utils::GuildDataMap>()
         .expect("no GuildDataMap in typemap")
         .entry(msg.guild_id.unwrap())
-        .or_default()
+        .or_insert(GuildData::new(msg.guild_id.unwrap()))
         .tracks
         .drain(0..)
     {
