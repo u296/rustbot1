@@ -113,7 +113,10 @@ impl Response {
                     Ok(())
                 }
 
-                Self::TextReply((_, answer)) => Ok(()),
+                Self::TextReply((_, answer)) => {
+                    msg.channel_id.say(ctx, answer).await?;
+                    Ok(())
+                },
             }
         } else {
             Ok(())
