@@ -116,8 +116,6 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
 fn main() -> Result<(), Box<dyn Error>> {
     let executor = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
-        .worker_threads(4)
-        .thread_stack_size(4 * 1024 * 1024)
         .build()?;
 
     executor.block_on(async_main())
