@@ -25,8 +25,6 @@ impl EventHandler for Handler {
 
         let mut s = String::new();
 
-        
-
         if config.reactions.nice_69 && msg.content.contains("69") {
             s.push_str("\nnice");
         }
