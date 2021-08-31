@@ -17,30 +17,21 @@ impl Handler {
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
-        let typemap = ctx.data.read().await;
+        let mut typemap = ctx.data.write().await;
 
-        let config = typemap
-            .get::<config::Config>()
-            .expect("no config in typemap");
+        let responses = typemap
+            .get_mut::<utils::GuildDataMap>()
+            .expect("no config in typemap")
+            .entry(msg.guild_id.unwrap())
+            .or_insert(utils::GuildData::new(msg.guild_id.unwrap()))
+            .persistent
+            .iter_responses()
+            .map(|x| x.exec(&ctx, &msg));
 
-        let mut s = String::new();
 
-        if config.reactions.nice_69 && msg.content.contains("69") {
-            s.push_str("\nnice");
-        }
-        if config.reactions.blazeit_420 && msg.content.contains("420") {
-            s.push_str("\nblaze it");
-        }
+        futures::future::join_all(responses).await;
+        
 
-        if !s.is_empty() {
-            utils::send_buffered_text(
-                &ctx,
-                msg.channel_id,
-                futures::stream::iter(s.trim().lines()),
-            )
-            .await
-            .unwrap();
-        }
     }
 
     async fn ready(&self, _: Context, ready: Ready) {
