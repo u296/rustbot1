@@ -29,9 +29,10 @@ struct Leaver {
 impl songbird::EventHandler for Leaver {
     async fn act(&self, _ctx: &EventContext<'_>) -> Option<songbird::Event> {
         if let Some(call) = self.manager.get(self.guild_id) {
+            debug!("acquired call");
             let mut c = call.lock().await;
             match c.leave().await {
-                Ok(_) => (),
+                Ok(_) => debug!("left call"),
                 Err(e) => error!("{}", e),
             }
         }
@@ -56,6 +57,7 @@ impl Response {
         if msg.content.contains(self.get_trigger()) {
             match self {
                 Self::AudioCue((_, answer)) => {
+                    debug!("acquiring source");
                     let source = {
                         let filename = {
                             let manifest = crate::utils::ContentManifest::read_from_file(
@@ -77,6 +79,7 @@ impl Response {
                         songbird::ffmpeg(file).await
                     };
 
+                    debug!("acquiring guild");
                     let guild = msg.guild(ctx).await.unwrap();
 
                     let source = match source {
@@ -89,9 +92,12 @@ impl Response {
                         }
                     };
 
+                    debug!("getting maybe vc");
                     let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author);
 
+                    debug!("getting call");
                     let call = if let Some(vc) = maybe_vc {
+                        debug!("joining voice channel");
                         utils::join_voice_channel(ctx, &guild, &vc).await?
                     } else {
                         msg.channel_id
@@ -100,8 +106,10 @@ impl Response {
                         return Ok(());
                     };
 
+                    debug!("starting track");
                     let trackhandle = utils::play_from_input(call, source).await;
 
+                    debug!("adding end event handler");
                     trackhandle.add_event(
                         songbird::Event::Track(songbird::TrackEvent::End),
                         Leaver {
