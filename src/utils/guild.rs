@@ -48,7 +48,7 @@ impl PersistentData {
         Ok(())
     }
 
-    pub fn flush(&self, guild_id: GuildId) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn flush(&self, guild_id: GuildId) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let path_to_dir = PathBuf::from("./guilds");
         let mut path_to_file = path_to_dir.clone();
         path_to_file.push(guild_id.0.to_string());

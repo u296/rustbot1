@@ -17,7 +17,9 @@ use serenity::framework::standard::macros::group;
     read_timer,
     stop_timer,
     select_random,
-    split
+    split,
+    add_reaction,
+    remove_reaction,
 )]
 struct General;
 
@@ -35,3 +37,6 @@ use timer::*;
 
 mod random;
 use random::*;
+
+mod reactions;
+use reactions::*;
