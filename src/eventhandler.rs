@@ -1,5 +1,4 @@
 use super::prelude::*;
-use crate::config;
 
 use serenity::{
     async_trait,
@@ -30,6 +29,7 @@ impl EventHandler for Handler {
 
 
         futures::future::join_all(responses).await;
+        debug!("join finished");
         
 
     }
