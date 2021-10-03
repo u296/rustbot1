@@ -18,7 +18,7 @@ async fn add_reaction(ctx: &Context, msg: &Message, mut args: Args) -> CommandRe
 
     let mut map = ctx.data.write().await;
 
-    let mut guild_data = map.get_mut::<utils::GuildDataMap>()
+    let guild_data = map.get_mut::<utils::GuildDataMap>()
         .expect("no GuildDataMap in typemap")
         .entry(guild_id)
         .or_insert(utils::GuildData::new(guild_id));

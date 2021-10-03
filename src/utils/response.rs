@@ -13,7 +13,6 @@ use tracing::*;
 
 use crate::utils;
 
-// fisrt string is what to react to, second is reaction
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Response {
     pub trigger: String,
