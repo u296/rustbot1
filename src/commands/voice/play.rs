@@ -19,9 +19,9 @@ async fn enqueue(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let manager = songbird::get(ctx).await.unwrap().clone();
 
     let source = if args.message().starts_with("https://") {
-        songbird::input::ytdl_search(args.message()).await
-    } else {
         songbird::input::ytdl(args.message()).await
+    } else {
+        songbird::input::ytdl_search(args.message()).await
     }.unwrap();
 
     let user_voice_channel = match utils::get_user_voice_channel(&guild, &msg.author) {
