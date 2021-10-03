@@ -109,7 +109,6 @@ fn time_has_passed(passed: Duration, last_time: &mut Instant) -> bool {
     }
 }
 
-#[instrument(skip(ctx, lines))]
 pub async fn send_buffered_text<S, I>(
     ctx: &Context,
     channel: ChannelId,
@@ -133,7 +132,6 @@ where
             send_chunks.extend(split_string_to_sendable_chunks(output_buf));
             output_buf = String::new();
 
-            debug!("sending {} chunks", send_chunks.len());
             // loop here so we actually send something
             while !send_chunks.is_empty() {
                 let chunk = send_chunks.remove(0);
@@ -145,7 +143,6 @@ where
         }
     }
     send_chunks.extend(split_string_to_sendable_chunks(output_buf));
-    debug!("stream empty, remaining chunks: {}", send_chunks.len());
     for chunk in send_chunks {
         if !chunk.trim().is_empty() {
             channel.say(&ctx, chunk).await?;
