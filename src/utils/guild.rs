@@ -33,6 +33,13 @@ impl PersistentData {
         }
     }
 
+    fn check_response_recursion(responses: Vec<Response>, new: Response) -> bool {
+        
+        
+
+        false
+    }
+
     pub fn remove_response(&mut self, trigger: &str) -> Result<(), ()> {
         let mut removed = false;
         self.responses.retain(|x| {
@@ -53,7 +60,6 @@ impl PersistentData {
         path_to_file.push(guild_id.0.to_string());
         path_to_file.set_extension("json");
 
-        debug!("path to file: {:?}", path_to_file);
 
         let file = match File::create(&path_to_file) {
             Ok(f) => f,
