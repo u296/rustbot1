@@ -51,7 +51,7 @@ impl PersistentData {
         let path_to_dir = PathBuf::from("./guilds");
         let mut path_to_file = path_to_dir.clone();
         path_to_file.push(guild_id.0.to_string());
-        path_to_file.push(".json");
+        path_to_file.set_extension("json");
 
         debug!("path to file: {:?}", path_to_file);
 
