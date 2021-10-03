@@ -53,6 +53,8 @@ impl PersistentData {
         path_to_file.push(guild_id.0.to_string());
         path_to_file.push(".json");
 
+        debug!("path to file: {:?}", path_to_file);
+
         let file = match File::create(&path_to_file) {
             Ok(f) => f,
             Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {
