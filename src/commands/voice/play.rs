@@ -18,11 +18,13 @@ async fn enqueue(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let guild = msg.guild(ctx).await.unwrap();
     let manager = songbird::get(ctx).await.unwrap().clone();
 
+    let time1 = std::time::Instant::now();
     let source = if args.message().starts_with("https://") {
         songbird::input::ytdl(args.message()).await
     } else {
         songbird::input::ytdl_search(args.message()).await
     }.unwrap();
+    info!("acquiring source took {} ms", (std::time::Instant::now() - time1).as_millis());
 
     let user_voice_channel = match utils::get_user_voice_channel(&guild, &msg.author) {
         Some(c) => c,
