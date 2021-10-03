@@ -10,42 +10,45 @@ use std::sync::Arc;
 use songbird::Songbird;
 use uuid::Uuid;
 
+
+
+#[command]
+#[only_in(guilds)]
+async fn enqueue(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    let guild = msg.guild(ctx).await.unwrap();
+    let manager = songbird::get(ctx).await.unwrap().clone();
+
+    let source = if args.message().starts_with("https://") {
+        songbird::input::ytdl_search(args.message()).await
+    } else {
+        songbird::input::ytdl(args.message()).await
+    }.unwrap();
+
+    let user_voice_channel = match utils::get_user_voice_channel(&guild, &msg.author) {
+        Some(c) => c,
+        None => {
+            return Ok(())
+        }
+    };
+
+    let (call, joinresult) = manager.join(guild.id.0, user_voice_channel).await;
+
+    match joinresult {
+        Ok(_) => (),
+        Err(e) => {
+            error!("failed to join");
+            return Ok(());
+        }
+    };
+
+    call.lock().await.enqueue_source(source.into());
+
+    Ok(())
+}
+
+
 const IDLE_LEAVE_TIME: Duration = Duration::from_secs(10);
 
-struct IdleLeaver {
-    manager: Arc<Songbird>,
-    typemap: Arc<RwLock<TypeMap>>,
-    guild_id: GuildId,
-    track_uuid: Uuid,
-}
-
-#[async_trait]
-impl EventHandler for IdleLeaver {
-    async fn act(&self, _ctx: &EventContext<'_>) -> Option<songbird::Event> {
-        let mut cringe = self.typemap.write().await;
-
-        let guild_data = cringe
-            .get_mut::<crate::utils::GuildDataMap>()
-            .expect("no GuildDataMap in typemap")
-            .get_mut(&self.guild_id)?;
-
-        guild_data.tracks.retain(|t| t.uuid() != self.track_uuid);
-
-        tokio::time::sleep(IDLE_LEAVE_TIME).await;
-
-        if guild_data.tracks.is_empty() {
-            if let Some(call) = self.manager.get(self.guild_id) {
-                let mut c = call.lock().await;
-                match c.leave().await {
-                    Ok(_) => (),
-                    Err(e) => error!("{}", e),
-                }
-            }
-        }
-
-        None
-    }
-}
 
 #[command]
 #[aliases("p")]
@@ -130,16 +133,6 @@ async fn play_backend(
 
     let trackhandle = utils::play_from_input(call, source).await;
 
-    trackhandle.add_event(
-        songbird::Event::Track(songbird::TrackEvent::End),
-        IdleLeaver {
-            manager: songbird::get(ctx).await.unwrap().clone(),
-            typemap: ctx.data.clone(),
-            guild_id: guild.id,
-            track_uuid: trackhandle.uuid(),
-        },
-    )?;
-
     let mut typemap = ctx.data.write().await;
 
     let guild_data_map = typemap
@@ -148,7 +141,6 @@ async fn play_backend(
         .entry(msg.guild_id.unwrap())
         .or_insert(GuildData::new(guild.id));
 
-    guild_data_map.tracks.push(trackhandle.clone());
 
     Ok(())
 }
@@ -157,7 +149,7 @@ async fn play_backend(
 #[only_in(guilds)]
 #[aliases("shutup", "stfu")]
 async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    for track in ctx
+    /*for track in ctx
         .data
         .write()
         .await
@@ -175,6 +167,6 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
             }
         }
     }
-
+    */
     Ok(())
 }

@@ -15,7 +15,7 @@ futures="*"
 md5 = "*"
 async-process = "*"
 strip-ansi-escapes = "*"
-songbird = "*"
+songbird = {version = "*", features = ["builtin-queue"]}
 serde = "*"
 serde_json = "*"
 rand = "*"

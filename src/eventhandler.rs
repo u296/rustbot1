@@ -29,7 +29,6 @@ impl EventHandler for Handler {
 
 
         futures::future::join_all(responses).await;
-        debug!("join finished");
         
 
     }

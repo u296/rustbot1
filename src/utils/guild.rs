@@ -7,6 +7,7 @@ use super::prelude::*;
 use serde::{Deserialize, Serialize};
 use serenity::model::prelude::*;
 use songbird::tracks::TrackHandle;
+use songbird::tracks::TrackQueue;
 
 use super::response::*;
 
@@ -70,8 +71,6 @@ impl PersistentData {
 #[derive(Clone, Debug)]
 pub struct GuildData {
     id: GuildId,
-    // tracks that are currently playing
-    pub tracks: Vec<TrackHandle>,
     pub persistent: PersistentData,
 }
 
@@ -81,7 +80,7 @@ impl GuildData {
         path_to_persistent.push("guilds");
         path_to_persistent.push(format!("{}.json", id.0.to_string()));
 
-        let persistent = match File::open(&path_to_persistent) {
+        let persistent: PersistentData = match File::open(&path_to_persistent) {
             Ok(f) => match serde_json::from_reader(f) {
                 Ok(d) => d,
                 Err(e) => {
@@ -107,7 +106,6 @@ impl GuildData {
 
         GuildData {
             id: id,
-            tracks: vec![],
             persistent: persistent,
         }
     }
