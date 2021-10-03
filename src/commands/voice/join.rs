@@ -1,5 +1,4 @@
 use super::prelude::*;
-use crate::utils::GuildData;
 
 #[command]
 #[aliases("connect")]
