@@ -1,16 +1,12 @@
 use super::prelude::*;
-use crate::utils::GuildData;
-
-use serenity::async_trait;
-use songbird::{EventContext, EventHandler};
-use std::time::Duration;
-
-use std::sync::Arc;
-
-use songbird::Songbird;
-use uuid::Uuid;
 
 
+use std::time::Instant;
+
+use songbird::input::{ytdl, ytdl_search, self};
+use songbird::driver::Bitrate;
+
+const COMPRESSED_BITRATE: Bitrate = Bitrate::BitsPerSecond(0x10000);
 
 #[command]
 #[only_in(guilds)]
@@ -18,13 +14,19 @@ async fn enqueue(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let guild = msg.guild(ctx).await.unwrap();
     let manager = songbird::get(ctx).await.unwrap().clone();
 
-    let time1 = std::time::Instant::now();
+    let time1 = Instant::now();
     let source = if args.message().starts_with("https://") {
-        songbird::input::ytdl(args.message()).await
+        ytdl(args.message()).await
     } else {
-        songbird::input::ytdl_search(args.message()).await
+        ytdl_search(args.message()).await
     }.unwrap();
-    info!("acquiring source took {} ms", (std::time::Instant::now() - time1).as_millis());
+    let time2 = Instant::now();
+    info!("acquiring source took {} ms", (time2 - time1).as_millis());
+    let source = input::cached::Compressed::new(source, COMPRESSED_BITRATE).unwrap();
+    let time3 = Instant::now();
+    info!("compressing source took {} ms", (time3 - time2).as_millis());
+
+
 
     let user_voice_channel = match utils::get_user_voice_channel(&guild, &msg.author) {
         Some(c) => c,
@@ -54,10 +56,17 @@ async fn skip(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let guild = msg.guild(ctx).await.unwrap();
     let manager = songbird::get(ctx).await.unwrap();
 
+    let num_skips: usize = match args.message().parse() {
+        Ok(n) => n,
+        _ => 1,
+    };
+
     match manager.get(guild.id.0) {
         Some(call) => {
             let lock = call.lock().await;
-            lock.queue().skip().unwrap();
+            for _ in 0..num_skips {
+                lock.queue().skip().unwrap();
+            }
 
         },
         None => ()
@@ -65,16 +74,6 @@ async fn skip(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     Ok(())
 }
-
-
-
-
-
-
-
-
-use songbird::input::{self, Input};
-
 
 
 #[command]
