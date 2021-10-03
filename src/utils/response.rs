@@ -15,9 +15,9 @@ use crate::utils;
 
 // fisrt string is what to react to, second is reaction
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Response {
-    AudioCue((String, String)),
-    TextReply((String, String)),
+pub struct Response {
+    pub trigger: String,
+    pub response: String,
 }
 
 struct Leaver {
@@ -42,101 +42,16 @@ impl songbird::EventHandler for Leaver {
 }
 
 impl Response {
-    pub fn get_trigger(&self) -> &str {
-        match self {
-            Self::AudioCue((s, _)) => &s,
-            Self::TextReply((s, _)) => &s,
-        }
-    }
-
     pub async fn exec(
         &self,
         ctx: &Context,
         msg: &Message,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        if msg.content.contains(self.get_trigger()) {
-            match self {
-                Self::AudioCue((_, answer)) => {
-                    debug!("acquiring source");
-                    let source = {
-                        let filename = {
-                            let manifest = crate::utils::ContentManifest::read_from_file(
-                                &crate::utils::CONTENT_MANIFEST_PATH,
-                            )
-                            .await?;
-
-                            match manifest.uploads.get(answer) {
-                                Some(f) => f.clone(),
-                                None => {
-                                    msg.channel_id.say(ctx, "no such file").await?;
-                                    return Ok(());
-                                }
-                            }
-                        };
-
-                        let file: &str = &format!("content/{}", filename);
-
-                        songbird::ffmpeg(file).await
-                    };
-
-                    debug!("acquiring guild");
-                    let guild = msg.guild(ctx).await.unwrap();
-
-                    let source = match source {
-                        Ok(src) => src,
-                        Err(e) => {
-                            msg.channel_id
-                                .say(ctx, format!("error starting source: {:?}", e))
-                                .await?;
-                            return Err(format!("{:?}", e).into());
-                        }
-                    };
-
-                    debug!("getting manager");
-                    let mgr = songbird::get(ctx).await.unwrap().clone();
-
-                    debug!("getting maybe vc");
-                    let maybe_vc = utils::get_user_voice_channel(&guild, &msg.author);
-
-                    debug!("getting call");
-                    let call = if let Some(vc) = maybe_vc {
-                        debug!("joining voice channel");
-                        match mgr.join(guild.id, vc).await {
-                            (x, Ok(_)) => x,
-                            (_, _) => {
-                                error!("gateway error");
-                                panic!();
-                            }
-                        }
-                    } else {
-                        msg.channel_id
-                            .say(ctx, "you are not in a voice channel")
-                            .await?;
-                        return Ok(());
-                    };
-
-                    debug!("starting track");
-                    let trackhandle = utils::play_from_input(call, source).await;
-
-                    debug!("adding end event handler");
-                    trackhandle.add_event(
-                        songbird::Event::Track(songbird::TrackEvent::End),
-                        Leaver {
-                            manager: songbird::get(ctx).await.unwrap().clone(),
-                            guild_id: guild.id,
-                        },
-                    )?;
-
-                    Ok(())
-                }
-
-                Self::TextReply((_, answer)) => {
-                    msg.channel_id.say(ctx, answer).await?;
-                    Ok(())
-                },
-            }
-        } else {
-            Ok(())
-        }
+        if msg.content.contains(&self.trigger) {
+            utils::send_buffered_text(ctx, msg.channel_id, futures::stream::iter(self.response.trim().lines())).await?;
+            
+              
+        } 
+        Ok(())
     }
 }

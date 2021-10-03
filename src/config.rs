@@ -4,20 +4,12 @@ use std::path::Path;
 
 use serenity::prelude::*;
 
-pub const CONFIG_PATH: &str = "config.json";
-
-#[derive(PartialEq, Clone, Debug, Default, Deserialize)]
-pub struct ReactionOptions {
-    pub nice_69: bool,
-    pub blazeit_420: bool,
-    pub embed_fail: bool,
-}
+pub const CONFIG_PATH: &str = "./config.json";
 
 #[derive(PartialEq, Clone, Debug, Deserialize)]
 pub struct Config {
     pub prefix: String,
     pub enable_exec: bool,
-    pub reactions: ReactionOptions,
 }
 
 impl TypeMapKey for Config {
@@ -34,24 +26,15 @@ pub async fn read_config(file: impl AsRef<Path>) -> Result<Config, Box<dyn Error
 
 #[test]
 fn config_deserialize() {
-    let text = r#"{
+    let text = 
+r#"{
     "prefix": ".",
-    "enable_exec": false,
-    "reactions": {
-        "nice_69": true,
-        "blazeit_420": true,
-        "embed_fail": false
-    }
+    "enable_exec": false
 }"#;
 
     let wanted = Config {
         prefix: String::from("."),
-        enable_exec: false,
-        reactions: ReactionOptions {
-            nice_69: true,
-            blazeit_420: true,
-            embed_fail: false,
-        },
+        enable_exec: false
     };
 
     match serde_json::from_str::<Config>(text) {

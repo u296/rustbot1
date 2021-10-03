@@ -6,8 +6,6 @@ use std::path::*;
 use super::prelude::*;
 use serde::{Deserialize, Serialize};
 use serenity::model::prelude::*;
-use songbird::tracks::TrackHandle;
-use songbird::tracks::TrackQueue;
 
 use super::response::*;
 
@@ -25,7 +23,7 @@ impl PersistentData {
         match self
             .responses
             .iter()
-            .find(|r| r.get_trigger() == response.get_trigger())
+            .find(|r| r.trigger == response.trigger)
         {
             None => {
                 self.responses.push(response);
@@ -38,7 +36,7 @@ impl PersistentData {
     pub fn remove_response(&mut self, trigger: &str) -> Result<(), ()> {
         let mut removed = false;
         self.responses.retain(|x| {
-            if x.get_trigger() != trigger {
+            if x.trigger != trigger {
                 true
             } else {
                 removed = true;

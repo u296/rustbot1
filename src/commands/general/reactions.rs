@@ -7,24 +7,14 @@ use crate::utils::*;
 async fn add_reaction(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let guild_id = msg.guild_id.unwrap();
 
-    let mut b = || -> Result<Response, Box<dyn std::error::Error + Send + Sync>>{
-        let trigger = args.single()?;
-        let reaction_type: String = args.single()?;
-        let answer = args.single()?;
+    let trigger = args.single()?;
+    let answer = args.single()?;
 
-        match reaction_type.as_str() {
-            "audio" => Ok(Response::AudioCue((trigger, answer))),
-            "text" => Ok(Response::TextReply((trigger, answer))),
-            _ => panic!()
-        }
+    let response = Response{
+        trigger: trigger,
+        response: answer,
     };
-
-    let response = match b() {
-        Ok(r) => r,
-        Err(e) => {
-            return Ok(())
-        }
-    };
+   
 
     let mut map = ctx.data.write().await;
 
