@@ -53,6 +53,7 @@ async fn enqueue(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
 #[command]
 #[only_in(guilds)]
+#[aliases("s")]
 async fn skip(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let (guild, manager) = join!(msg.guild(ctx), songbird::get(ctx));
     let guild = guild.unwrap();
