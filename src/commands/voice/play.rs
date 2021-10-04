@@ -1,31 +1,37 @@
 use super::prelude::*;
 
-
-use std::time::Instant;
+use futures::join;
 
 use songbird::tracks::LoopState;
-use songbird::input::{ytdl, ytdl_search, self};
+use songbird::input::{Input, ytdl, ytdl_search, self};
 use songbird::driver::Bitrate;
 
 const COMPRESSED_BITRATE: Bitrate = Bitrate::BitsPerSecond(0x10000);
 
+async fn get_yt_source(text: &str) -> Result<Input, Box<dyn std::error::Error + Send + Sync>> {
+    if text.starts_with("https://") {
+        Ok(ytdl(text).await?)
+    } else {
+        Ok(ytdl_search(text).await?)
+    }
+}
+
 #[command]
 #[only_in(guilds)]
+#[aliases("play", "p")]
 async fn enqueue(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    let guild = msg.guild(ctx).await.unwrap();
-    let manager = songbird::get(ctx).await.unwrap().clone();
+    let guild_fut = msg.guild(ctx);
+    let manager_fut = songbird::get(ctx);
+    let source_fut = get_yt_source(args.message());
 
-    let time1 = Instant::now();
-    let source = if args.message().starts_with("https://") {
-        ytdl(args.message()).await
-    } else {
-        ytdl_search(args.message()).await
-    }.unwrap();
-    let time2 = Instant::now();
-    info!("acquiring source took {} ms", (time2 - time1).as_millis());
-    let source = input::cached::Compressed::new(source, COMPRESSED_BITRATE).unwrap();
-    let time3 = Instant::now();
-    info!("compressing source took {} ms", (time3 - time2).as_millis());
+    let (guild, manager, source) = join!(guild_fut, manager_fut, source_fut);
+    let guild = guild.unwrap();
+    let manager = manager.unwrap();
+    let source = source?;
+
+
+    
+    let source = input::cached::Compressed::new(source, COMPRESSED_BITRATE)?;
 
 
 
@@ -38,13 +44,7 @@ async fn enqueue(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     let (call, joinresult) = manager.join(guild.id.0, user_voice_channel).await;
 
-    match joinresult {
-        Ok(_) => (),
-        Err(e) => {
-            error!("failed to join");
-            return Ok(());
-        }
-    };
+    joinresult?;
 
     call.lock().await.enqueue_source(source.into());
 
@@ -54,8 +54,9 @@ async fn enqueue(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[command]
 #[only_in(guilds)]
 async fn skip(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    let guild = msg.guild(ctx).await.unwrap();
-    let manager = songbird::get(ctx).await.unwrap();
+    let (guild, manager) = join!(msg.guild(ctx), songbird::get(ctx));
+    let guild = guild.unwrap();
+    let manager = manager.unwrap();
 
     let num_skips: usize = match args.message().parse() {
         Ok(n) => n,
@@ -80,8 +81,9 @@ async fn skip(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[only_in(guilds)]
 #[aliases("loop")]
 async fn command_loop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    let guild = msg.guild(ctx).await.unwrap();
-    let manager = songbird::get(ctx).await.unwrap();
+    let (guild, manager) = join!(msg.guild(ctx), songbird::get(ctx));
+    let guild = guild.unwrap();
+    let manager = manager.unwrap();
 
     match manager.get(guild.id.0) {
         Some(call) => {
@@ -120,8 +122,9 @@ async fn command_loop(ctx: &Context, msg: &Message, _args: Args) -> CommandResul
 #[only_in(guilds)]
 #[aliases("shutup", "stfu")]
 async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
-    let guild = msg.guild(ctx).await.unwrap();
-    let manager = songbird::get(ctx).await.unwrap();
+    let (guild, manager) = join!(msg.guild(ctx), songbird::get(ctx));
+    let guild = guild.unwrap();
+    let manager = manager.unwrap();
 
     match manager.get(guild.id.0) {
         Some(call) => {
