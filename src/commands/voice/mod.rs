@@ -5,7 +5,7 @@ mod prelude {
 use serenity::framework::standard::macros::group;
 
 #[group]
-#[commands(join, leave, stop, enqueue, skip)]
+#[commands(join, leave, stop, enqueue, skip, command_loop)]
 struct Voice;
 
 mod join;

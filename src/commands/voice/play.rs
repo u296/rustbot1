@@ -3,6 +3,7 @@ use super::prelude::*;
 
 use std::time::Instant;
 
+use songbird::tracks::LoopState;
 use songbird::input::{ytdl, ytdl_search, self};
 use songbird::driver::Bitrate;
 
@@ -67,6 +68,45 @@ async fn skip(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
             for _ in 0..num_skips {
                 lock.queue().skip().unwrap();
             }
+
+        },
+        None => ()
+    };
+
+    Ok(())
+}
+
+#[command]
+#[only_in(guilds)]
+#[aliases("loop")]
+async fn command_loop(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    let guild = msg.guild(ctx).await.unwrap();
+    let manager = songbird::get(ctx).await.unwrap();
+
+    match manager.get(guild.id.0) {
+        Some(call) => {
+            let lock = call.lock().await;
+            let queue = lock.queue();
+
+            match queue.current() {
+                Some(trackhandle) => {
+                    let info = trackhandle.get_info().await.unwrap();
+
+                    let result = if info.loops == LoopState::Finite(0) {
+                        trackhandle.enable_loop()
+                    } else {
+                        trackhandle.disable_loop()
+                    };
+
+                    match result {
+                        Ok(_) => (),
+                        Err(e) => {
+                            error!("{}", e);
+                        }
+                    }
+                },
+                None => ()
+            };
 
         },
         None => ()
