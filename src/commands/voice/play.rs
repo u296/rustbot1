@@ -92,14 +92,16 @@ async fn command_loop(ctx: &Context, msg: &Message, args: Args) -> CommandResult
                 Some(trackhandle) => {
                     let info = trackhandle.get_info().await.unwrap();
 
-                    let result = if info.loops == LoopState::Finite(0) {
-                        trackhandle.enable_loop()
+                    let (message, result) = if info.loops == LoopState::Finite(0) {
+                        ("loop enabled", trackhandle.enable_loop())
                     } else {
-                        trackhandle.disable_loop()
+                        ("loop disabled", trackhandle.disable_loop())
                     };
 
                     match result {
-                        Ok(_) => (),
+                        Ok(_) => {
+                            msg.channel_id.say(ctx, message).await?;
+                        },
                         Err(e) => {
                             error!("{}", e);
                         }
