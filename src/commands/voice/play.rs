@@ -79,7 +79,7 @@ async fn skip(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[command]
 #[only_in(guilds)]
 #[aliases("loop")]
-async fn command_loop(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+async fn command_loop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let guild = msg.guild(ctx).await.unwrap();
     let manager = songbird::get(ctx).await.unwrap();
 
@@ -92,22 +92,20 @@ async fn command_loop(ctx: &Context, msg: &Message, args: Args) -> CommandResult
                 Some(trackhandle) => {
                     let info = trackhandle.get_info().await.unwrap();
 
-                    let (message, result) = if info.loops == LoopState::Finite(0) {
-                        ("loop enabled", trackhandle.enable_loop())
+                    let message = if info.loops == LoopState::Finite(0) {
+                        trackhandle.enable_loop()?;
+                        "loop enabled"
                     } else {
-                        ("loop disabled", trackhandle.disable_loop())
+                        trackhandle.disable_loop()?;
+                        "loop disabled"
                     };
-
-                    match result {
-                        Ok(_) => {
-                            msg.channel_id.say(ctx, message).await?;
-                        },
-                        Err(e) => {
-                            error!("{}", e);
-                        }
-                    }
+                    msg.channel_id.say(ctx, message).await?;
+                        
+                    
                 },
-                None => ()
+                None => {
+                    msg.channel_id.say(ctx, "nothing playing").await?;
+                }
             };
 
         },
