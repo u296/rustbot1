@@ -9,11 +9,13 @@ use songbird::driver::Bitrate;
 const COMPRESSED_BITRATE: Bitrate = Bitrate::BitsPerSecond(0x10000);
 
 async fn get_yt_source(text: &str) -> Result<Input, Box<dyn std::error::Error + Send + Sync>> {
-    if text.starts_with("https://") {
-        Ok(ytdl(text).await?)
+    let source = if text.starts_with("https://") {
+        ytdl(text).await?
     } else {
-        Ok(ytdl_search(text).await?)
-    }
+        ytdl_search(text).await?
+    };
+
+    Ok(input::cached::Compressed::new(source, COMPRESSED_BITRATE)?.into())
 }
 
 #[command]
@@ -28,10 +30,6 @@ async fn enqueue(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let guild = guild.unwrap();
     let manager = manager.unwrap();
     let source = source?;
-
-
-    
-    let source = input::cached::Compressed::new(source, COMPRESSED_BITRATE)?;
 
 
 
