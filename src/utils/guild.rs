@@ -26,6 +26,10 @@ impl PersistentData {
             .find(|r| r.trigger == response.trigger)
         {
             None => {
+                if Self::check_response_recursion(&self.responses, &response) {
+                    return Err(());
+                }
+
                 self.responses.push(response);
                 Ok(())
             }
@@ -33,7 +37,7 @@ impl PersistentData {
         }
     }
 
-    fn check_response_recursion(responses: Vec<Response>, new: Response) -> bool {
+    fn check_response_recursion(_responses: &[Response], _new: &Response) -> bool {
         
         
 
