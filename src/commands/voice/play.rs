@@ -17,7 +17,7 @@ async fn get_local_source(name: &str) -> Result<Option<Input>, Box<dyn std::erro
         None => return Ok(None),
     };
 
-    let filepath: &str = format!("content/{}", filename);
+    let filepath: &str = &format!("content/{}", filename);
 
     let source = songbird::ffmpeg(filepath).await?;
 
