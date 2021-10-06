@@ -221,13 +221,13 @@ dependencies = [
 
 [[package]]
 name = "bot1"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "async-process",
  "futures",
  "lazy_static",
  "md5",
- "rand 0.8.4",
+ "rand 0.7.3",
  "regex",
  "serde",
  "serde_json",
