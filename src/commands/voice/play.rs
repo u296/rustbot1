@@ -8,6 +8,59 @@ use songbird::driver::Bitrate;
 
 const COMPRESSED_BITRATE: Bitrate = Bitrate::BitsPerSecond(0x10000);
 
+
+async fn get_local_source(name: &str) -> Result<Option<Input>, Box<dyn std::error::Error + Send + Sync>> {
+    let manifest = utils::ContentManifest::read_from_file(&utils::CONTENT_MANIFEST_PATH).await?;
+
+    let filename = match manifest.uploads.get(name) {
+        Some(f) => f.clone(),
+        None => return Ok(None),
+    };
+
+    let filepath: &str = format!("content/{}", filename);
+
+    let source = songbird::ffmpeg(filepath).await?;
+
+    Ok(Some(input::cached::Compressed::new(source, COMPRESSED_BITRATE)?.into()))
+}
+
+#[command]
+#[only_in(guilds)]
+#[aliases("play_local", "pl")]
+async fn enqueue_local(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    let guild_fut = msg.guild(ctx);
+    let manager_fut = songbird::get(ctx);
+    let source_fut = get_local_source(args.message());
+
+    let (guild, manager, source) = join!(guild_fut, manager_fut, source_fut);
+    let guild = guild.unwrap();
+    let manager = manager.unwrap();
+    let source = match source? {
+        Some(s) => s,
+        None => {
+            msg.channel_id.say(ctx, "no such file").await?;
+            return Ok(());
+        }
+    };
+
+
+
+    let user_voice_channel = match utils::get_user_voice_channel(&guild, &msg.author) {
+        Some(c) => c,
+        None => {
+            return Ok(())
+        }
+    };
+
+    let (call, joinresult) = manager.join(guild.id.0, user_voice_channel).await;
+
+    joinresult?;
+
+    call.lock().await.enqueue_source(source.into());
+
+    Ok(())
+}
+
 async fn get_yt_source(text: &str) -> Result<Input, Box<dyn std::error::Error + Send + Sync>> {
     let source = if text.starts_with("https://") {
         ytdl(text).await?
