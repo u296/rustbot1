@@ -8,7 +8,6 @@ async fn spam(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     let guild = msg.guild(&ctx.cache).await.unwrap();
 
-    debug!("attempting to spam \"{}\"", name);
 
     match guild.role_by_name(name) {
         Some(role) => {
