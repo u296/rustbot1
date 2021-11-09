@@ -12,6 +12,6 @@ mod voice;
 
 pub use guild::*;
 pub use local::*;
+pub use response::*;
 pub use textchannel::*;
 pub use voice::*;
-pub use response::*;

@@ -27,10 +27,7 @@ impl EventHandler for Handler {
             .iter_responses()
             .map(|x| x.exec(&ctx, &msg));
 
-
         futures::future::join_all(responses).await;
-        
-
     }
 
     async fn ready(&self, _: Context, ready: Ready) {

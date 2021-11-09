@@ -2,14 +2,15 @@ use super::prelude::*;
 
 use futures::join;
 
-use songbird::tracks::LoopState;
-use songbird::input::{Input, ytdl, ytdl_search, self};
 use songbird::driver::Bitrate;
+use songbird::input::{self, ytdl, ytdl_search, Input};
+use songbird::tracks::LoopState;
 
 const COMPRESSED_BITRATE: Bitrate = Bitrate::BitsPerSecond(0x10000);
 
-
-async fn get_local_source(name: &str) -> Result<Option<Input>, Box<dyn std::error::Error + Send + Sync>> {
+async fn get_local_source(
+    name: &str,
+) -> Result<Option<Input>, Box<dyn std::error::Error + Send + Sync>> {
     let manifest = utils::ContentManifest::read_from_file(&utils::CONTENT_MANIFEST_PATH).await?;
 
     let filename = match manifest.uploads.get(name) {
@@ -21,7 +22,9 @@ async fn get_local_source(name: &str) -> Result<Option<Input>, Box<dyn std::erro
 
     let source = songbird::ffmpeg(filepath).await?;
 
-    Ok(Some(input::cached::Compressed::new(source, COMPRESSED_BITRATE)?.into()))
+    Ok(Some(
+        input::cached::Compressed::new(source, COMPRESSED_BITRATE)?.into(),
+    ))
 }
 
 #[command]
@@ -43,13 +46,9 @@ async fn enqueue_local(ctx: &Context, msg: &Message, args: Args) -> CommandResul
         }
     };
 
-
-
     let user_voice_channel = match utils::get_user_voice_channel(&guild, &msg.author) {
         Some(c) => c,
-        None => {
-            return Ok(())
-        }
+        None => return Ok(()),
     };
 
     let (call, joinresult) = manager.join(guild.id.0, user_voice_channel).await;
@@ -84,13 +83,9 @@ async fn enqueue(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let manager = manager.unwrap();
     let source = source?;
 
-
-
     let user_voice_channel = match utils::get_user_voice_channel(&guild, &msg.author) {
         Some(c) => c,
-        None => {
-            return Ok(())
-        }
+        None => return Ok(()),
     };
 
     let (call, joinresult) = manager.join(guild.id.0, user_voice_channel).await;
@@ -121,9 +116,8 @@ async fn skip(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
             for _ in 0..num_skips {
                 lock.queue().skip().unwrap();
             }
-
-        },
-        None => ()
+        }
+        None => (),
     };
 
     Ok(())
@@ -154,21 +148,17 @@ async fn command_loop(ctx: &Context, msg: &Message, _args: Args) -> CommandResul
                         "loop disabled"
                     };
                     msg.channel_id.say(ctx, message).await?;
-                        
-                    
-                },
+                }
                 None => {
                     msg.channel_id.say(ctx, "nothing playing").await?;
                 }
             };
-
-        },
-        None => ()
+        }
+        None => (),
     };
 
     Ok(())
 }
-
 
 #[command]
 #[only_in(guilds)]
@@ -185,11 +175,9 @@ async fn stop(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
                 lock.queue().stop();
                 lock.leave().await.unwrap();
             }
-        }, None => {
-            ()
         }
+        None => (),
     };
-
 
     Ok(())
 }

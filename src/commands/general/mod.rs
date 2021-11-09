@@ -19,7 +19,7 @@ use serenity::framework::standard::macros::group;
     select_random,
     split,
     add_reaction,
-    remove_reaction,
+    remove_reaction
 )]
 struct General;
 

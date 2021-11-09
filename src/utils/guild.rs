@@ -38,9 +38,6 @@ impl PersistentData {
     }
 
     fn check_response_recursion(_responses: &[Response], _new: &Response) -> bool {
-        
-        
-
         false
     }
 
@@ -63,7 +60,6 @@ impl PersistentData {
         let mut path_to_file = path_to_dir.clone();
         path_to_file.push(guild_id.0.to_string());
         path_to_file.set_extension("json");
-
 
         let file = match File::create(&path_to_file) {
             Ok(f) => f,

@@ -34,7 +34,7 @@ r#"{
 
     let wanted = Config {
         prefix: String::from("."),
-        enable_exec: false
+        enable_exec: false,
     };
 
     match serde_json::from_str::<Config>(text) {
