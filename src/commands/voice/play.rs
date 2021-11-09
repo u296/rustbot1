@@ -6,7 +6,7 @@ use songbird::driver::Bitrate;
 use songbird::input::{self, ytdl, ytdl_search, Input};
 use songbird::tracks::LoopState;
 
-const COMPRESSED_BITRATE: Bitrate = Bitrate::BitsPerSecond(0x10000);
+const COMPRESSED_BITRATE: Bitrate = Bitrate::BitsPerSecond(128000);
 
 async fn get_local_source(
     name: &str,
