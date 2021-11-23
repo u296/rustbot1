@@ -4,6 +4,8 @@ use std::path::PathBuf;
 
 use tracing::*;
 
+use futures::try_join;
+
 use serenity::{
     framework::standard::{macros::hook, CommandError, StandardFramework},
     model::channel::Message,
@@ -38,7 +40,7 @@ async fn get_token() -> Result<String, Box<dyn Error>> {
 
     while let Some(arg) = iter.next() {
         if arg == "--token" || arg == "-t" {
-            tokenpath = Some(iter.peek().expect("expected argument after -t"));
+            tokenpath = Some(iter.peek().expect("expected argument after option"));
             break;
         }
     }
@@ -49,11 +51,26 @@ async fn get_token() -> Result<String, Box<dyn Error>> {
     Ok(token)
 }
 
+async fn get_config() -> Result<config::Config, Box<dyn Error>> {
+    let mut configpath: Option<&str> = None;
+    let mut iter = env::args().peekable();
+
+    while let Some(arg) = iter.next() {
+        if arg == "--config" || arg == "-c" {
+            configpath = Some(iter.peek().expect("expected argument after option"));
+            break;
+        }
+    }
+
+    let path = PathBuf::from(configpath.unwrap_or(config::DEFAULT_CONFIG_PATH));
+    let config = config::read_config(path).await?;
+    Ok(config)
+}
+
 async fn async_main() -> Result<(), Box<dyn Error>> {
     tracing_subscriber::fmt::init();
-    let token = get_token().await?;
 
-    let config = config::read_config(config::DEFAULT_CONFIG_PATH).await?;
+    let (token, config) = try_join!(get_token(), get_config())?;
 
     let framework = StandardFramework::new()
         .configure(|c| {
