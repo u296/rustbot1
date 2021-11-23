@@ -53,7 +53,7 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
     tracing_subscriber::fmt::init();
     let token = get_token().await?;
 
-    let config = config::read_config(config::CONFIG_PATH).await?;
+    let config = config::read_config(config::DEFAULT_CONFIG_PATH).await?;
 
     let framework = StandardFramework::new()
         .configure(|c| {

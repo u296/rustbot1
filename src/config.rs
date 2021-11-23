@@ -4,12 +4,13 @@ use std::path::Path;
 
 use serenity::prelude::*;
 
-pub const CONFIG_PATH: &str = "./config.json";
+pub const DEFAULT_CONFIG_PATH: &str = "./config.json";
 
 #[derive(PartialEq, Clone, Debug, Deserialize)]
 pub struct Config {
     pub prefix: String,
     pub enable_exec: bool,
+    pub log: Option<String>,
 }
 
 impl TypeMapKey for Config {
@@ -35,6 +36,7 @@ r#"{
     let wanted = Config {
         prefix: String::from("."),
         enable_exec: false,
+        log: None
     };
 
     match serde_json::from_str::<Config>(text) {
