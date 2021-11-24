@@ -9,7 +9,6 @@ pub const DEFAULT_CONFIG_PATH: &str = "./config.json";
 #[derive(PartialEq, Clone, Debug, Deserialize)]
 pub struct Config {
     pub prefix: String,
-    pub enable_exec: bool,
     pub log: Option<String>,
 }
 
@@ -26,13 +25,12 @@ pub async fn read_config(file: impl AsRef<Path>) -> Result<Config, Box<dyn Error
 fn config_deserialize() {
     let text = r#"{
     "prefix": ".",
-    "enable_exec": false
+    "log": "/home/discord/logs/current"
 }"#;
 
     let wanted = Config {
         prefix: String::from("."),
-        enable_exec: false,
-        log: None,
+        log: Some(String::from("/home/discord/logs/current")),
     };
 
     match serde_json::from_str::<Config>(text) {

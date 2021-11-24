@@ -9,7 +9,6 @@ use serenity::framework::standard::macros::group;
 
 #[group]
 #[commands(
-    exec,
     spam,
     upload,
     list,
@@ -22,9 +21,6 @@ use serenity::framework::standard::macros::group;
     remove_reaction
 )]
 struct General;
-
-mod exec;
-use exec::*;
 
 mod spam;
 use spam::*;
