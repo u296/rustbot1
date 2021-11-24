@@ -12,7 +12,6 @@ edition = "2018"
 tokio={version = "*", features = ["fs", "macros", "rt-multi-thread"]}
 tokio-stream = {version = "*", features = ["io-util"]}
 futures="*"
-md5 = "*"
 async-process = "*"
 strip-ansi-escapes = "*"
 songbird = {version = "*", features = ["builtin-queue"]}
