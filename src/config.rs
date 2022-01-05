@@ -3,7 +3,7 @@ use std::error::Error;
 use std::path::Path;
 
 use serenity::prelude::*;
-// test comment 2
+// test comment 3
 pub const DEFAULT_CONFIG_PATH: &str = "./config.json";
 
 #[derive(PartialEq, Clone, Debug, Deserialize)]
