@@ -79,7 +79,7 @@ async fn get_wolframalpha_apikey() -> Result<Option<wolframalpha::WolframalphaAp
         }
     }
 
-    let filepath = PathBuf::from(apikey_path.unwrap_or("token"));
+    let filepath = PathBuf::from(apikey_path.unwrap_or(wolframalpha::DEFAULT_WOLFRAMALPHA_APIKEY_PATH));
     let apikey = match tokio::fs::read_to_string(&filepath).await {
         Ok(a) => Ok(Some(wolframalpha::WolframalphaApikey::from(&a))),
         Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
