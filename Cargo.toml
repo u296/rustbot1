@@ -23,6 +23,7 @@ tracing-subscriber = {version = "*", features = ["fmt"]}
 uuid = "*"
 regex = "*"
 lazy_static = "*"
+wolfram_alpha = "*"
 
 
 [dependencies.serenity]
