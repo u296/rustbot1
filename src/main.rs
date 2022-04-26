@@ -25,6 +25,7 @@ pub mod prelude {
 mod commands;
 mod config;
 mod eventhandler;
+mod wolframalpha;
 pub mod utils;
 
 #[hook]
@@ -67,10 +68,31 @@ async fn get_config() -> Result<config::Config, Box<dyn Error>> {
     Ok(config)
 }
 
+async fn get_wolframalpha_apikey() -> Result<Option<wolframalpha::WolframalphaApikey>, Box<dyn Error>> {
+    let mut apikey_path: Option<&str> = None;
+    let mut iter = env::args().peekable();
+
+    while let Some(arg) = iter.next() {
+        if arg == "--wolframalpha_apikey" || arg == "-w" {
+            apikey_path = Some(iter.peek().expect("expected argument after option"));
+            break;
+        }
+    }
+
+    let filepath = PathBuf::from(apikey_path.unwrap_or("token"));
+    let apikey = match tokio::fs::read_to_string(&filepath).await {
+        Ok(a) => Ok(Some(wolframalpha::WolframalphaApikey::from(&a))),
+        Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(e)
+    }?;
+
+    Ok(apikey)
+}
+
 async fn async_main() -> Result<(), Box<dyn Error>> {
     tracing_subscriber::fmt::init();
 
-    let (token, config) = try_join!(get_token(), get_config())?;
+    let (token, config, wolframalpha_apikey) = try_join!(get_token(), get_config(), get_wolframalpha_apikey())?;
 
     let framework = StandardFramework::new()
         .configure(|c| {
@@ -97,6 +119,7 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
         .type_map_insert::<config::Config>(config)
         .type_map_insert::<utils::TextChannelDataMap>(utils::TextChannelDataMap::new())
         .type_map_insert::<utils::GuildDataMap>(utils::GuildDataMap::new())
+        .type_map_insert::<wolframalpha::WolframalphaApikey>(wolframalpha_apikey)
         .await?;
 
     match client.start().await {

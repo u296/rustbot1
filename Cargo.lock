@@ -2638,9 +2638,9 @@ dependencies = [
 
 [[package]]
 name = "wolframalpha_api"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d90c0b25b0aeeea6873897cf489c67c9db3e8d6a9778768c5fd56e24f9c5f0c"
+checksum = "cbae862ed127734c3716688259b652f97064bee8f59a0cef85309e8da4092875"
 dependencies = [
  "image",
  "reqwest",
