@@ -233,12 +233,12 @@ dependencies = [
 
 [[package]]
 name = "bot1"
-version = "0.7.6"
+version = "0.8.0"
 dependencies = [
  "async-process",
  "futures",
  "lazy_static",
- "rand 0.8.5",
+ "rand 0.7.3",
  "regex",
  "serde",
  "serde_json",
@@ -249,7 +249,7 @@ dependencies = [
  "tokio-stream",
  "tracing",
  "tracing-subscriber",
- "uuid 1.0.0",
+ "uuid",
  "wolframalpha_api",
 ]
 
@@ -1904,7 +1904,7 @@ dependencies = [
  "tracing-futures",
  "typemap_rev",
  "url",
- "uuid 0.8.2",
+ "uuid",
  "xsalsa20poly1305",
 ]
 
@@ -2383,12 +2383,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "uuid"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cfcd319456c4d6ea10087ed423473267e1a071f3bc0aa89f80d60997843c6f0"
-
-[[package]]
 name = "uwl"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2638,10 +2632,11 @@ dependencies = [
 
 [[package]]
 name = "wolframalpha_api"
-version = "0.3.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbae862ed127734c3716688259b652f97064bee8f59a0cef85309e8da4092875"
+checksum = "c036d9847d3b939561847e6456ce7351459285a192b0d3b245573d70bb89c118"
 dependencies = [
+ "bytes 1.1.0",
  "image",
  "reqwest",
  "tokio",

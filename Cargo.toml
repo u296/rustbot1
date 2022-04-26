@@ -1,6 +1,6 @@
 [package]
 name = "bot1"
-version = "0.7.6"
+version = "0.8.0"
 authors = ["u296 <u296b3g@gmail.com>"]
 edition = "2018"
 
