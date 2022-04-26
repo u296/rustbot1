@@ -18,7 +18,8 @@ use serenity::framework::standard::macros::group;
     select_random,
     split,
     add_reaction,
-    remove_reaction
+    remove_reaction,
+    wolframalpha
 )]
 struct General;
 
@@ -36,3 +37,6 @@ use random::*;
 
 mod reactions;
 use reactions::*;
+
+mod wolframalpha;
+use wolframalpha::*;
