@@ -23,11 +23,11 @@ tracing-subscriber = {version = "*", features = ["fmt"]}
 uuid = "*"
 regex = "*"
 lazy_static = "*"
-wolfram_alpha = "*"
+wolframalpha_api = "*"
 
 
 [dependencies.serenity]
-version = "*"
+version = "0.10.10"
 default-features = true
 features = [
     "framework",
