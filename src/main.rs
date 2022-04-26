@@ -25,8 +25,8 @@ pub mod prelude {
 mod commands;
 mod config;
 mod eventhandler;
-mod wolframalpha;
 pub mod utils;
+mod wolframalpha;
 
 #[hook]
 async fn after_hook(_: &Context, _: &Message, cmd_name: &str, error: Result<(), CommandError>) {
@@ -68,7 +68,8 @@ async fn get_config() -> Result<config::Config, Box<dyn Error>> {
     Ok(config)
 }
 
-async fn get_wolframalpha_apikey() -> Result<Option<wolframalpha::WolframalphaApikey>, Box<dyn Error>> {
+async fn get_wolframalpha_apikey(
+) -> Result<Option<wolframalpha::WolframalphaApikey>, Box<dyn Error>> {
     let mut apikey_path: Option<&str> = None;
     let mut iter = env::args().peekable();
 
@@ -79,11 +80,12 @@ async fn get_wolframalpha_apikey() -> Result<Option<wolframalpha::WolframalphaAp
         }
     }
 
-    let filepath = PathBuf::from(apikey_path.unwrap_or(wolframalpha::DEFAULT_WOLFRAMALPHA_APIKEY_PATH));
+    let filepath =
+        PathBuf::from(apikey_path.unwrap_or(wolframalpha::DEFAULT_WOLFRAMALPHA_APIKEY_PATH));
     let apikey = match tokio::fs::read_to_string(&filepath).await {
         Ok(a) => Ok(Some(wolframalpha::WolframalphaApikey::from(&a))),
         Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
-        Err(e) => Err(e)
+        Err(e) => Err(e),
     }?;
 
     Ok(apikey)
@@ -92,7 +94,8 @@ async fn get_wolframalpha_apikey() -> Result<Option<wolframalpha::WolframalphaAp
 async fn async_main() -> Result<(), Box<dyn Error>> {
     tracing_subscriber::fmt::init();
 
-    let (token, config, wolframalpha_apikey) = try_join!(get_token(), get_config(), get_wolframalpha_apikey())?;
+    let (token, config, wolframalpha_apikey) =
+        try_join!(get_token(), get_config(), get_wolframalpha_apikey())?;
 
     let framework = StandardFramework::new()
         .configure(|c| {
