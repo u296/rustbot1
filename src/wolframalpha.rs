@@ -2,17 +2,14 @@ use super::prelude::*;
 use std::env;
 use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
+use std::convert::From;
 
 pub const DEFAULT_WOLFRAMALPHA_APIKEY_PATH: &'static str = "./wolframalpha_apikey";
 pub struct WolframalphaApikey(String);
 
-impl WolframalphaApikey {
-    pub fn new() -> Self {
-        WolframalphaApikey(String::new())
-    }
-
-    pub fn from(s: &str) -> Self {
-        WolframalphaApikey(String::from(s))
+impl<T: Into<String>> From<T> for WolframalphaApikey {
+    fn from(s: T) -> Self {
+        WolframalphaApikey(s.into())
     }
 }
 
@@ -46,7 +43,7 @@ pub async fn get_wolframalpha_apikey() -> Result<Option<WolframalphaApikey>, Box
 
     let filepath = PathBuf::from(apikey_path.unwrap_or(DEFAULT_WOLFRAMALPHA_APIKEY_PATH));
     let apikey = match tokio::fs::read_to_string(&filepath).await {
-        Ok(a) => Ok(Some(WolframalphaApikey::from(&a))),
+        Ok(a) => Ok(Some(WolframalphaApikey::from(a))),
         Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
         Err(e) => Err(e),
     }?;
