@@ -12,7 +12,13 @@ async fn wolframalpha(ctx: &Context, msg: &Message, args: Args) -> CommandResult
         .expect("no WolframalphaApikey in typemap")
     {
         Some(api_key) => {
-            let gif_bytes = wolframalpha_api::api_retrieve_bytes(api_key, args.message()).await?;
+            let gif_bytes = match wolframalpha_api::api_retrieve_bytes(api_key, args.message()).await? {
+                Ok(b) => b,
+                Err(_) => {
+                    msg.channel_id.say(ctx, "invalid question").await?;
+                    return Ok(())
+                }
+            };
 
             msg.channel_id
                 .send_files(ctx, vec![(gif_bytes.as_ref(), "wfa.gif")], |m| m)
