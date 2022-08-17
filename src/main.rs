@@ -20,6 +20,8 @@ mod token;
 pub mod utils;
 mod wolframalpha;
 
+use tracing_subscriber::layer::SubscriberExt;
+
 #[hook]
 async fn after_hook(_: &Context, _: &Message, cmd_name: &str, error: Result<(), CommandError>) {
     if let Err(e) = error {
@@ -28,7 +30,6 @@ async fn after_hook(_: &Context, _: &Message, cmd_name: &str, error: Result<(), 
 }
 
 async fn async_main() -> Result<(), Box<dyn Error>> {
-    tracing_subscriber::fmt::init();
 
     let (token, config, wolframalpha_apikey) = try_join!(
         token::get_token(),
@@ -71,6 +72,8 @@ async fn async_main() -> Result<(), Box<dyn Error>> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    tracing::subscriber::set_global_default(tracing_subscriber::registry().with(tracing_tracy::TracyLayer::new()))?;
+
     let executor = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()?;

@@ -24,7 +24,7 @@ uuid = "*"
 regex = "*"
 lazy_static = "*"
 wolframalpha_api = "*"
-
+tracing-tracy = "*"
 
 [dependencies.serenity]
 version = "0.10.10"
